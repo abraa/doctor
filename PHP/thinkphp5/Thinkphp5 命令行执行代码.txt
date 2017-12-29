@@ -1,0 +1,153 @@
+				Thinkphp5 命令行执行代码
+说明:如何用命令行执行正常的tp5代码
+
+前言:
+      在此之前,你应当能正常使用linux php命令行,包括但不限于php安装,环境变量配置等...
+      
+
+1.简单示例执行:
+      官网文档关于命令行的介绍非常简短,没有接触过很容易云里雾里,不知所谓.当然你也可以看它的源码示例,调试几遍也就基本了解了.
+      这篇文章主要是用于你不想去调试源码,或者参考使用.
+      1. hello word !
+      我们构建一个PHP命令 hello 
+      #>   php think hello  
+      hello word !
+      代码示例
+	首先在application 文件夹下建立一个新文件夹command(用来放我们自定义的Tp命令) 我们取名叫Hello.php(随意取)
+<?php
+namespace app\command;
+
+use think\console\Command;
+use think\console\Input;
+use think\console\input\Argument;
+use think\console\input\Option;
+use think\console\Output;
+use think\Request;
+
+class Hello extends Command{                            //继承think\console\Command
+
+    /**
+     * 重写configure
+     * {@inheritdoc}
+     */
+    protected function configure()
+    {
+        $this->setName('hello')
+            ->setDescription('hello word !');
+    }
+
+    /**
+     * 重写execute
+     * {@inheritdoc}
+     */
+    protected function execute(Input $input, Output $output)
+    {
+        $output->writeln('hello word !');
+    }
+}
+?>
+这样我们简单的hello命令就完成了.
+可是现在我们cd 到tp根目录(就是有think这个php文件的目录) 执行php think hello 报错 : Command "hello" is not defined.
+
+这是因为我们还缺少一个配置文件
+编辑 application/command.php(没有就新建) 加上Hello.php文件的namespace
+<?php
+return [
+    "app\\command\\Hello",			
+];
+
+?>
+好了 ,现在我们的hello命令完成了. 是不是很简单?
+
+现在我们开始进阶版.
+我们如何像浏览器访问那样用命令行去执行php代码呢?
+我们修改hello命令,还是输出一个hello word !
+现在我们有一个index模块(module) , index控制器(controller) , index方法(action)
+<?php
+namespace app\index\controller;
+
+class Index
+{
+    public function index()
+    {
+       return 'hello word !';
+    }
+}
+?>
+
+hello命令代码
+<?php
+namespace app\command;
+
+use think\console\Command;
+use think\console\Input;
+use think\console\input\Argument;
+use think\console\input\Option;
+use think\console\Output;
+use think\Request;
+
+class Hello extends Command{                            //继承think\console\Command
+
+    /**
+     * 重写configure           ---定义命令
+     * {@inheritdoc}
+     */
+    protected function configure()
+    {
+        $this->setName('hello')                                 //命令名称
+            ->setDefinition([                           //Option 和 Argument都可以有多个, Argument的读取和定义的顺序有关.请注意
+                new Option('option', 'o', Option::VALUE_OPTIONAL, "命令option选项"),       //使用方式  php think hello  --option test 或 -o test
+                new Argument('test',Argument::OPTIONAL,"test参数"),                        //使用方式    php think hello  test1 (将输入的第一个参数test1赋值给定义的第一个Argument参数test)
+                //...
+            ])
+            ->setDescription('hello word !');                               //命令描述
+    }
+
+    /**
+     * 重写execute         ---执行入口
+     * {@inheritdoc}
+     */
+    protected function execute(Input $input, Output $output)
+    {                                                           //Input 用于获取输入信息    Output用于输出信息
+        $request = Request::instance([                          //如果在希望代码中像浏览器一样使用input()等函数你需要示例化一个Request并手动赋值
+            'get'=>$input->getArguments(),                    //示例1: 将input->Arguments赋值给Request->get  在代码中可以直接使用input('get.')获取参数
+            'route'=>$input->getOptions()                       //示例2: 将input->Options赋值给Request->route   在代码中可以直接使用request()->route(false)获取 
+            //...
+        ]);
+        $request->module("Index");                          //绑定当前模块为Index  只有绑定模块你在代码中使用model('user')等函数才不需要指定模块model('index/user')
+//        $request->controller('index')->action('index');       //绑定controller和action
+
+        $output->writeln(controller('index/Index')->index());       //执行index模块index控制器index函数 ,并输出返回值
+    }
+}
+
+输出 hello word !
+基本使用就到这了,如果希望了解更多详细用法可以去看源码和tp实现的几个命令示例,还是相当明了的. 
+当然你也可以继续看下去,但不会太过详细,只会有个基本介绍
+
+2.文件架构详解:
+我们从文件入口目录结构讲起:
+---------------
+   |-think   入口文件
+   |-thinkphp   框架目录
+      |-console.php 命令行入口
+      |-library
+          |-think
+	     |-App.php  ---App::initCommon() ;这是tp的初始化函数  只需要执行它你就可以使用整个tp5框架的功能了.
+	     |-Console.php    ---Console::init(); 这是tp的命令加载函数  执行它就可以使用tp的自定义命令了.
+	      ....
+略过框架实现的介绍(有兴趣的自己去看源码),简要说一下常用到却少接触的几个文件,毕竟我们的目的只是使用
+1.首先当然是think\console\Command :
+   执行命令的入口文件除了框架自己定义的execute() 也可以在初始化initialize(Input $input, Output $output)时通过$this->setCode(callback fn);来手动设置执行入口 (callback怎么用? 参考call_user_func())(比如调用$this->index() 就是: $this->setCode([$this,'index']);)
+    这样就可以在一个命令里逻辑区分使用不同的入口
+ 
+2.input :
+    好像没啥好讲得源码注释很详细. 只需要知道你所有的输入都在这个里面取就好了.   主要分成2块 Option 和 Argument 怎么定义怎么用就随你了.
+
+
+3.request :
+   虽然request放在这里感觉有点不大合适,但谁让tp helper函数都是基于request的呢? 虽然不需要它也能使用但要有和浏览器同样的体验(比如一样的代码能在浏览器和命令行同时执行),还是自己手动实例化一个request吧.
+   挺多的自己去看源码吧,注释挺详细的...
+   一般也就instance(['post'=>[],'get'=>[]...]) 实例化并绑定几个参数 再$request->module('index')绑定下当前模块就差不多了.毕竟像$_SERVER之类的自己设也没啥意义
+
+
