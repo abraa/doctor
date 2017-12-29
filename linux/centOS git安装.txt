@@ -1,0 +1,113 @@
+安装git
+yum install -y git
+
+创建一个文件夹
+mkdir ./appgit
+
+初始化git
+git init --bare ./appgit/gittest.git
+
+//修改文件所有用户
+chown -R gituser.git appgit
+
+//客户端需要创建 ssh RSA
+ssh-keygen -t rsa -C "276957690@qq.com"  
+一路回车...
+
+此时 C:\Users\用户名\.ssh 下会多出两个文件 id_rsa 和 id_rsa.pub
+id_rsa 是私钥
+id_rsa.pub 是公钥
+
+服务器端 Git 打开 RSA 认证
+进入 /etc/ssh 目录，编辑 sshd_config，打开以下三个配置的注释：
+
+RSAAuthentication yes
+PubkeyAuthentication yes
+AuthorizedKeysFile .ssh/authorized_keys
+保存并重启 sshd 服务：
+
+[root@localhost ssh]# service sshd reload
+
+由 AuthorizedKeysFile 得知公钥的存放路径是 .ssh/authorized_keys，实际上是 $Home/.ssh/authorized_keys，由于管理 Git 服务的用户是 gituser，所以实际存放公钥的路径是 /home/git/.ssh/authorized_keys
+
+在 /home/git/ 下创建目录 .ssh
+
+mkdir .ssh
+ls -a 
+
+然后把 .ssh 文件夹的 owner 修改为 git
+chown -R gituser.git .ssh
+
+在客户端导入公钥
+ssh gituser@47.90.55.178 'cat >> .ssh/authorized_keys' < ~/.ssh/id_rsa.pub
+输入密码
+
+记得修改.ssh 目录的权限为 700 .ssh/authorized_keys 文件的权限为 600
+
+现在可以使用git服务了git clone gituser@47.90.55.178:/opt/git/cyc.git  用户名@ip:文件目录
+
+禁止 git 用户 ssh 登录服务器
+之前在服务器端创建的 git 用户不允许 ssh 登录服务器
+
+编辑 /etc/passwd
+
+找到：
+
+gituser:x:1001:1001::/home/gituser:/bin/bash
+修改为
+
+gituser:x:1001:1001::/home/gituser:/bin/git-shell
+此时 git 用户可以正常通过 ssh 使用 git，但无法通过 ssh 登录系统。
+
+------------------------------------------------华丽的分割线---------------------------------------------------
+
+http(s) git服务器(有问题!!!!!!!!!!!!!!!!!!!!!! 提交不了是什么鬼, 版本和ssh对不上是什么鬼,not found又是什么鬼!!)
+
+修改httpd.conf 根目录
+
+确保开启
+LoadModule dav_module modules/mod_dav.so
+LoadModule dav_fs_module modules/mod_dav_fs.so
+Include conf/extra/httpd-dav.conf
+
+htpasswd生成访问账户和密码：
+#################第一次执行####################
+# htpasswd -c /opt/lampp/user.passwd test
+#################以后执行######################
+# htpasswd /opt/lampp/user.passwd test2
+
+配置httpd-dav.conf：可以写到你的Directory里面
+# vim /path/to/httpd/conf/extra/http-dav.conf
+##############################################
+  DAV on
+  AuthType Basic
+  AuthName "Git"
+  AuthUserFile /path/to/httpd/passwd.git
+  Require valid-user
+
+安装ssl模块：
+# yum -y install mod_ssl
+
+注：如果是手动编译的apache，需要自行生成证书
+
+# cd /path/to/httpd/conf/
+# openssl req -new -out server.csr # 信息自行输入
+# openssl rsa -in privkey.pem -out server.key
+# openssl x509 -in server.csr -out server.crt -req -signkey server.key -days 3650
+
+# vim httpd.conf
+修改httpd.conf，确保去掉前面的注释:
+LoadModule ssl_module modules/mod_ssl.so
+LoadModule socache_shmcb_module modules/mod_socache_shmcb.so
+Include conf/extra/httpd-ssl.conf
+修改httpd-ssl.conf，修改 DocumentRoot、SSLCertificateFile、SSLCertificateKeyFile，保证路径指向正确。
+
+# service httpd restart
+访问https://localhost/my-repo.git，输入test和密码，显示目录
+
+保证权限可用：
+# cd /根目录/my-repo.git
+# cp hooks/post-update.sample hooks/post-update
+# git update-server-info
+# chown -R apache.apache .
+# chmod -R 777 .
