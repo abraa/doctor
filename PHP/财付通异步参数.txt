@@ -1,0 +1,28 @@
+array (
+  'DATE' => '2018-01-24 16:23:05',
+  'URL' => '/RespondPayment/CallBack/code/tenpay.shtml?bank_type=CFT&discount=0&fee_type=1&input_charset=utf-8&notify_id=iaXaQBvw2t9a6_2qd7UANmvzLUSbUwWYUIFjOFUUr-fngUf2x3CnqCgdRokDBzaednWxRKShuR8yDH6oHvRg77e6kkTK2ZkR&out_trade_no=18011611226728_1516753176&partner=1216032401&product_fee=1&sign_type=MD5&time_end=20180124162303&total_fee=1&trade_mode=1&trade_state=0&transaction_id=1216032401201801245008926667&transport_fee=0&sign=3B38DCF9B42D28821EA9E3A43305B080',
+  'POST' => 
+  array (
+  ),
+  'GET' => 
+  array (
+    'code' => 'tenpay',
+    'bank_type' => 'CFT',
+    'discount' => '0',
+    'fee_type' => '1',
+    'input_charset' => 'utf-8',
+    'notify_id' => 'iaXaQBvw2t9a6_2qd7UANmvzLUSbUwWYUIFjOFUUr-fngUf2x3CnqCgdRokDBzaednWxRKShuR8yDH6oHvRg77e6kkTK2ZkR',
+    'out_trade_no' => '18011611226728_1516753176',
+    'partner' => '1216032401',
+    'product_fee' => '1',
+    'sign_type' => 'MD5',
+    'time_end' => '20180124162303',
+    'total_fee' => '1',
+    'trade_mode' => '1',
+    'trade_state' => '0',
+    'transaction_id' => '1216032401201801245008926667',
+    'transport_fee' => '0',
+    'sign' => '3B38DCF9B42D28821EA9E3A43305B080',
+  ),
+  'HTTP_RAW_POST_DATA' => 'NO',
+)

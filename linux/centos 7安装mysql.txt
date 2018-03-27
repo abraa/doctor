@@ -1,0 +1,91 @@
+============================================================================
+centos 7 安装mysql
+-------------------------------------------------------------------------
+1.获取mysql
+wget https://dev.mysql.com/get/mysql57-community-release-el7-11.noarch.rpm
+
+-------------------------------------------------------------------------
+
+2. 设置yum安装路径为本地源
+yum localinstall mysql57-community-release-el7-11.noarch.rpm
+# 注: 检查是否安装成功: yum repolist enabled | grep "mysql.*-community.*"
+#  yun 源文件配置 /etc/yum.repos.d//mysql-community.repo  比如指定5.6 将5.6的enabled=1 , 5.7的enabled=0
+
+-------------------------------------------------------------------------
+
+
+3. 安装mysql
+ yum install mysql-community-server
+
+-------------------------------------------------------------------------
+
+
+4. 启动MySQL服务
+ systemctl start mysqld
+
+-------------------------------------------------------------------------
+
+
+5. 开机启动
+systemctl enable mysqld
+
+# Systemd 默认从目录/etc/systemd/system/读取配置文件。但是，里面存放的大部分文件都是符号链接，指向目录/usr/lib/systemd/system/，真正的配置文件存放在那个目录。
+# systemctl enable命令用于在上面两个目录之间，建立符号链接关系。
+# 如果配置文件里面设置了开机启动，systemctl enable命令相当于激活开机启动。
+# 与之对应的，systemctl disable命令用于在两个目录之间，撤销符号链接关系，相当于撤销开机启动。
+
+systemctl daemon-reload          # 重载所有修改过的配置文件
+ 
+
+-------------------------------------------------------------------------
+
+6.修改root本地登录密码
+mysql安装完成之后，在/var/log/mysqld.log文件中给root生成了一个默认密码。通过下面的方式找到root默认密码，然后登录mysql进行修改：  grep 'temporary password' /var/log/mysqld.log
+shell> mysql -uroot -p
+mysql> ALTER USER 'root'@'localhost' IDENTIFIED BY 'MyNewPass4!'; 
+或者
+mysql> set password for 'root'@'localhost'=password('MyNewPass4!'); 
+# show variables like '%password%'; 可以检查密码策略相关信息
+# validate_password_policy：密码策略，默认为MEDIUM策略 
+# validate_password_dictionary_file：密码策略文件，策略为STRONG才需要 
+# validate_password_length：密码最少长度 
+# validate_password_mixed_case_count：大小写字符长度，至少1个 
+# validate_password_number_count ：数字至少1个 
+# validate_password_special_char_count：特殊字符至少1个 
+# 上述参数是默认策略MEDIUM的密码检查规则。
+# MySQL官网密码策略详细说明：http://dev.mysql.com/doc/refman/5.7/en/validate-password-options-variables.html#sysvar_validate_password_policy
+
+#修改密码策略
+#在/etc/my.cnf文件添加validate_password_policy配置，指定密码策略
+
+# 选择0（LOW），1（MEDIUM），2（STRONG）其中一种，选择2需要提供密码字典文件
+# validate_password_policy=0
+# 如果不需要密码策略，添加my.cnf文件中添加如下配置禁用即可：
+
+# validate_password = off
+# 重新启动mysql服务使配置生效：
+
+# systemctl restart mysqld
+
+-------------------------------------------------------------------------
+
+7. 添加远程登录账号
+mysql> GRANT ALL PRIVILEGES ON *.* TO 'yangxin'@'%' IDENTIFIED BY 'Yangxin0917!' WITH GRANT OPTION;
+
+
+-------------------------------------------------------------------------
+
+8. 配置默认编码为utf8
+character_set_server=utf8
+init_connect='SET NAMES utf8'
+-------------------------------------------------------------------------
+
+默认配置文件路径： 
+配置文件：/etc/my.cnf 
+日志文件：/var/log//var/log/mysqld.log 
+服务启动脚本：/usr/lib/systemd/system/mysqld.service 
+socket文件：/var/run/mysqld/mysqld.pid
+
+
+
+
