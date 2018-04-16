@@ -1,0 +1,19 @@
+1. javascript原型是什么?
+	顾名思义,原型链即是一个线性调用或者说继承.下一层都是对上一层的扩展或者装饰.
+	js的所有作用域都是线性的并且单向的,即当前没有找到到上一级获取,而无法获取下一级的参数.(和闭包概念相同)
+
+2.实例化一个对象是如何实现的?
+1)首先Object.prototype是最顶级,因为他的__proto__是null.所以所有通过构造函数生成的对象都具有Object.prototype的属性.(可以视为子类)
+
+2)然后Function是一个特殊对象,这是一个构造函数对象,如果想通过New执行构造函数返回一个对象,这个构造函数必须是一个Function.(而且你想要一个可以用new的构造函数,你必须通过new Function返回一个构造函数对象.即Function是一个特殊的构造函数,只有它会返回一个函数对象而不是一个普通对象)
+
+3)所有的Object都有__proto__属性,这是个指针,是用来表明原型链的顺序的,即你当前对象没有的属性会到这个里面一层层去查找直到null(返回undefined)
+
+4)所有Object的__proto__指针都指向这个Object的constructor(生成这个对象的构造函数)的prototype(即定义的Function的prototype).也只有构造函数才有prototype(当然你给一个object加上prototype也没有用)
+
+5)所有的new操作的构造函数对象__proto__都是Function,普通构造函数对象的prototype是一个Object,只有Function的prototype是function(当然function.prototype.__proto__也是Object),只不过function是一个特殊的Object,它可以通过new来生成一个新构造函数对象. (new new Function()()这种骚操作),但是由它生成的function new无法再次返回构造函数对象(不管怎么改对象参数都没有用.第二次new的时候返回一定是个Object而不是一个function)(估计得看js的源码实现才知道原因)
+
+6)构造函数的返回结果可以视为它prototype作用域执行定义的构造函数(prototype.constructor(也就是它自身))的值所产生的对象.(即可以将构造函数的prototype视为构造函数自身的上下文对象context)
+----------	原型链就是这样一层一层实现下去的.即你定义一个函数c 只要将c.prototype.__proto__ = a对象 ,即实现继承a对象. 当实例化c构造函数时也会继承a的属性  --------------
+	------------ 注意,原型链是指针,也就是你修改a的值,c的值也会被修改,(前提是c没有重写这个属性) ----------------------------
+	----------  Object.getOwnPropertyNames(Function) 可以查看对象有哪些属性 (有些在console中点不开...)------------

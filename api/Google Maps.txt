@@ -1,0 +1,21 @@
+Google Maps API 网络服务  
+
+官网地址 ：
+
+https://developers.google.com/maps/documentation/webservices/?hl=zh-cn
+
+
+
+1、根据地址获取经纬度
+
+http://maps.google.com/maps/api/geocode/json?address=北京&language=zh-CN&sensor=false
+
+2、计算路线数据
+
+http://maps.googleapis.com/maps/api/directions/json?origin=北京&destination=上海&sensor=false&mode=driving
+
+3、根据经纬度获取详细地址
+
+http://maps.google.com/maps/api/geocode/json?latlng="latlng"&language=zh-CN&sensor=false
+
+等等还有很多，大家可以自己去找找

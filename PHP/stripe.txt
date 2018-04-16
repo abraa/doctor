@@ -1,0 +1,89 @@
+<?php
+   require_once('./config.php');
+   
+//需要用到的参数传过来就好. 这是纯php后台完成支付,如果你先使用js创建了token对象那么直接把token传过来就好了.不用创建token对象
+$token_id  = $_POST['stripeToken'];
+$email  = $_POST['stripeEmail'];
+$amount  = $_POST['data-amount'];
+$currency  = $_POST['data-currency'];
+
+
+// \Stripe\Stripe::setApiKey("sk_test_BQokikJOvBiI2HlWgH4olfQ2"); //私钥
+//创建token
+//通过这个创建一个卡并在后面将它绑定到一个customer
+// $token = \Stripe\Token::create(array(
+//   "card" => array(     //这个就是卡
+//     "number" => "4242424242424242",  //卡号
+//     "exp_month" => 9,
+//有效期月
+//     "exp_year" => 2017,
+//有效期年
+//     "cvc" => "314"
+//安全码       有这几个就可以支付了
+//   )
+//));
+
+
+//cusetomer 顾客  你可以使用Customer::create创建很多个 cusetomer_ 每个customer可以有很多个card_
+//每个对象都会有一个id 如$customer->id   card_id 你可以通过$token->card->id 或者$charge[source][id]
+// $customer = \Stripe\Customer::create(array('email' => $email )); //创建customer 获得一个新的customer_id
+
+
+// $customer = \Stripe\Customer::retrieve($customer_id); //根据customer_id 获取customer对象
+
+// $customer->sources->create(array("source" => $token->id)); //通过token添加一个新的card_
+
+
+// $card = $customer->sources->retrieve("card_18yvP02eZvKYlo2CH5HSFo0l"); //通过card_id 获取card对象
+//创建顾客对象
+  $customer = \Stripe\Customer::create(array(
+      'email' => $email,
+      'source'  => $token_id
+  ));
+  
+  //var_dump($customer);
+  try {
+  //构建这个对象就完成了支付
+  $charge = \Stripe\Charge::create(array(
+ 'customer' => $customer->id,
+ 'amount'   => $amount,
+ 'currency' => $currency,
+ "description" => "Example charge"
+ ));  
+ //到这没抛异常就已经完成支付了
+ //echo $charge['amount'];
+ 
+ var_dump($charge['source']);
+
+ $source=$charge['source'];
+  echo $source['last4'];//银行卡后四位
+ 
+      echo '<h1>Successfully charged $50.00!</h1>';
+ 
+ 
+// Stripe.card
+ // 支付是需要customer(顾客) 
+ // 构造这个需要token,
+ // 如果本来就有customer你可以直接通过customer的id获取.
+ //  一个customer中可以有很多张card.
+ //  你可以直接创建一个新的card.
+ //  也可以直接通过已有card的id获取.
+ //  然后通过构造charge对象完成支付就可以了
+
+// 恩 简单说 第一步通过card构造token
+
+//第二步 通过token->id构造customer
+
+//第三步通过customer->id构造 charge
+
+//最后 没报异常就成功了. 
+
+ 
+ 
+ 
+  } catch(\Stripe\Error\Card $e) {
+ //echo "支付失败,请重试！";
+ echo "<script type='text/javascript'>alert('支付失败,请重试！');window.location.href=history.back();</script>";
+  }
+  
+  

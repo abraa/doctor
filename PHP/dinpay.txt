@@ -1,0 +1,210 @@
+//注意 如果你的参数带有特殊字符提交的时候会提示: 您的请求参数中包含非法字符！
+
+//然而并没办法解决.比如产品名称带有括号... 客服告诉你去掉吧..
+
+<?php
+
+/**
+ * 
+ * Dinpay.php (智付支付模块)
+ */
+
+
+class Dinpay  {
+public $config = array()  ;
+
+
+    public function __construct($config=array()) {
+         $this->config = $config;
+
+
+
+        
+$this->config['gateway_url'] = 'https://pay.dinpay.com/gateway?input_charset=UTF-8';
+$this->config['gateway_method'] = 'POST';
+
+
+       
+// $this->config['notify_url'] =  return_url('dinpay',1);
+$this->config['return_url'] =  return_url('dinpay');
+    }
+
+
+public function setup(){
+
+
+$modules['pay_name']    = L('DinPal_pay_name');   
+$modules['pay_code']    = 'Dinpay';
+$modules['pay_desc']    = L('DinPal_pay_desc');
+$modules['is_cod']  = '0';
+$modules['is_online']  = '1';
+$modules['author']  = 'none';
+$modules['website'] = 'https://merchants.dinpay.com/';
+$modules['version'] = '1.0.0';
+$modules['config']  = array(
+array('name' => 'merchant_code',           'type' => 'text',   'value' => ''),
+array('name' => 'notify_url',           'type' => 'text',   'value' => ''),
+);
+
+
+return $modules;
+}
+
+
+public function get_code($info){
+ //key 注意每行要顶格写不要空格      
+        $merchant_private_key='-----BEGIN PRIVATE KEY-----
+MIICdwIBADANBgkqhkiG9w0BAQEFAASCAmEwggJdAgEAAoGBAMpF1traKrVe88Bv
+g8GjJ9+NLS90LrLStr4WVo3eC4z82stS5Kd8d3+FTnxnuql/uzvvxpD1W5kc5ac6
+xardwB0hkCeSv8vQgyilUPgUH/nbwhMNUupm4ly3YPvSOqXgNi6w5AF6lxHD03Te
+qjG89PblpOtq1MRkcpokGf7bSBGLAgMBAAECgYADDjcGq1EF2F9aQtT8sdhCWkGa
+e+jQrrov+OppzjbidFdhxujJVun/NSZQXsjFErbjWuXm/q3ZjEQz2IFv6VWjlCOH
+CTuYfo9PZgVlWNAikwfqmZSp2fSMqG0/3sMr5C8bI5FBv8JH/fBYcKJEmNhM4mAS
+3Ho3ievBSzue57Pn4QJBAOn8mIF36zJASoGeSgVT+LES0WtflBxiTS9ZONnlRq9S
+6052dOpRZ0/Kn1KPtESuRKh/uGPqUEvcWGfEkJsW9MkCQQDdTW/XMbWnGooDbYrW
+Cr2iBjyXR8htDA4+naokiniy9QWqusjPW/f43EJq0kjynSJKWBRfEsnpMJO15CJm
+xSGzAkEAnovY7olKJf+oPJH8CAYxEhL1MfNOkbkOIdIsEoEn1y6xYLYlXIySG1/p
+evECrjMDNMVuNM2VYQHKKW3oqh3w+QJAVE+UNF/z3N33hqbNJg6hgIDvxJLMgP7+
+zkwy7gjzQvqmVg0jRBy9tEn148yJjiTfU4OK/02hLv4ayElJ8e1YkQJBANZoq9rv
+zLIer8v4koV2guCNi3MOkB8+umX89/5QSorWhoZQh8wXENm3w9LzIyadHLOmJako
+UxGMo0t1IqEFa44=
+-----END PRIVATE KEY-----';
+
+
+            
+        $parameter['merchant_code'] = $this->config['merchant_code'];//商户号，1118004517是测试商户号，线上发布时要更换商家自己的商户号！"2090080307"
+        $parameter['service_type'] ="direct_pay";    
+        $parameter['interface_version'] ="V3.0";
+        $parameter['sign_type'] ="RSA-S";
+        $parameter['input_charset'] = "UTF-8";
+       
+        $parameter['notify_url'] =$this->config['site_url'].$this->config['notify_url'];          
+        $parameter['order_no'] = $info['order_no'];   
+        $parameter['order_time'] = date( 'Y-m-d H:i:s' );    
+        $parameter['order_amount'] = $info['order_amount'];  
+        $parameter['product_name'] = strtr($info['product_name'],array("("=>" ",")"=>" ")); 
+
+
+        //以下参数为可选参数，如有需要，可参考文档设定参数值
+        
+        $parameter['return_url'] = $this->config['return_url'];     
+        $parameter['pay_type'] = $info['pay_type'];
+        $parameter['redo_flag'] = $info['redo_flag'];    
+        $parameter['product_code'] = $info['product_code']; 
+        $parameter['product_desc'] = $info['product_desc']; 
+        $parameter['product_num'] = $info['product_num'];
+        $parameter['show_url'] = $info['show_url']; 
+        $parameter['client_ip'] = $info['client_ip'] ;    
+        $parameter['bank_code'] = $info['bank_code'];    
+        $parameter['extend_param'] = $info['extend_param'];
+        $parameter['extra_return_param'] = $info['extra_return_param'];  
+
+
+        ksort($parameter);
+        reset($parameter);
+        
+        $sign  = '';
+
+
+        foreach ($parameter AS $key => $val)
+        {
+           if($val&&"sign_type"!=$key){
+              $sign  .= "$key=$val&";
+           }
+           
+        }
+
+
+        $merchant_private_key= openssl_get_privatekey($merchant_private_key);
+        $signStr  = substr($sign, 0, -1);
+  
+        openssl_sign($signStr,$sign_info,$merchant_private_key,OPENSSL_ALGO_MD5);
+       
+        $sign = base64_encode($sign_info);
+        //$sign  = substr($sign, 0, -1). ALIPAY_AUTH;
+       
+        $button = '<form name="dinpayForm" method="post" action="https://pay.dinpay.com/gateway?input_charset=UTF-8" target="_blank">
+            <input type="hidden" name="sign"        value="'. $sign.'" />
+            <input type="hidden" name="merchant_code" value="'.  $parameter['merchant_code'].'" />
+            <input type="hidden" name="bank_code"     value="'. $parameter['bank_code'].'"/>
+            <input type="hidden" name="order_no"      value="'. $parameter['order_no'].'"/>
+            <input type="hidden" name="order_amount"  value="'. $parameter['order_amount'].'"/>
+            <input type="hidden" name="service_type"  value="'. $parameter['service_type'].'"/>
+            <input type="hidden" name="input_charset" value="'. $parameter['input_charset'].'"/>
+            <input type="hidden" name="notify_url"    value="'. $parameter['notify_url'].'">
+            <input type="hidden" name="interface_version" value="'. $parameter['interface_version'].'"/>
+            <input type="hidden" name="sign_type"     value="'. $parameter['sign_type'].'"/>
+            <input type="hidden" name="order_time"    value="'. $parameter['order_time'].'"/>
+            <input type="hidden" name="product_name"  value="'. $parameter['product_name'].'"/>
+            <input type="hidden" Name="client_ip"     value="'. $parameter['client_ip'].'"/>
+            <input type="hidden" Name="extend_param"  value="'. $parameter['extend_param'].'"/>
+            <input type="hidden" Name="extra_return_param" value="'. $parameter['extra_return_param'].'"/>
+            <input type="hidden" Name="pay_type"  value="'. $parameter['pay_type'].'"/>
+            <input type="hidden" Name="product_code"  value="'. $parameter['product_code'].'"/>
+            <input type="hidden" Name="product_desc"  value="'. $parameter['product_desc'].'"/>
+            <input type="hidden" Name="product_num"   value="'. $parameter['product_num'].'"/>
+            <input type="hidden" Name="return_url"    value="'. $parameter['return_url'].'"/>
+            <input type="hidden" Name="show_url"      value="'. $parameter['show_url'].'"/>
+            <input type="hidden" Name="redo_flag"     value="'. $parameter['redo_flag'].'"/>  
+            </form>';
+
+
+
+
+return $button;
+}
+
+
+public function respond()
+    {   
+        //公钥私钥要顶行写
+         $dinpay_public_key ='-----BEGIN PUBLIC KEY-----
+MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCmSIgNygZBjsXQDF0JYvvh/T
+rFUAcftP48lcgLJlW4v6CgCaDCk/yUEb9CZZcqxYYVeco3VQBId0ZqZdwvMj1Q
+8reCoJSFfFYd5H7Hpn+LXlc7j2ACmPXXGpviaeFVTLcpf+gDmo8uNNchZD7irf
+AD1eknb+OwBmrb+DgjJaqhVQIDAQAB 
+-----END PUBLIC KEY-----';  
+        $res = array();
+if (!empty($_POST))
+        {
+            foreach($_POST as $key => $data)
+            {
+               if ($key != 'sign' && $key != 'sign_type' && $data != "" )
+                {
+                 $res[$key] = $data;
+                }
+            }
+        }
+        $dinpaySign = base64_decode($_POST['sign']);
+        //$order_sn = str_replace($_GET['subject'], '', $_GET['out_trade_no']);
+       // $order_sn = trim($res['order_no']);
+
+
+
+
+        /* 检查数字签名是否正确 */
+        ksort($res);
+        reset($res);
+
+
+        $sign = '';
+        foreach ($res AS $key=>$val)
+        {
+                $sign .= $key.'='.$val.'&';   
+        }
+       
+        $signStr = substr($sign, 0, -1);
+
+
+        $dinpay_public_key = openssl_get_publickey($dinpay_public_key);
+        
+        $flag = openssl_verify($signStr,$dinpaySign,$dinpay_public_key,OPENSSL_ALGO_MD5);   
+        return $flag;
+}
+
+
+
+
+
+}
+?>
