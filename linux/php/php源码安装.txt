@@ -1,0 +1,149 @@
+http://php.net/manual/zh/install.unix.nginx.php (官方教程)
+
+方法一、简单安装（通过yum）
+
+1.安装epel-release
+
+
+rpm -ivh http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm
+2.安装PHP7的rpm源
+
+rpm -Uvh https://mirror.webtatic.com/yum/el7/webtatic-release.rpm
+3.安装PHP7
+
+
+yum install php70w
+方法二、编译安装
+
+1.下载php7
+
+
+wget -O php7.tar.gz http://cn2.php.net/get/php-7.1.1.tar.gz/from/this/mirror
+2.解压php7
+
+
+tar -xvf php7.tar.gz
+3.进入php目录
+
+cd php-7.0.4
+4.安装依赖包
+
+
+# 直接复制下面一行（不包括本行）
+yum install libxml2 libxml2-devel openssl openssl-devel bzip2 bzip2-devel libcurl libcurl-devel libjpeg libjpeg-devel libpng libpng-devel freetype freetype-devel gmp gmp-devel libmcrypt libmcrypt-devel readline readline-devel libxslt libxslt-devel
+5.编译配置（如果出现错误，基本都是上一步的依赖文件没有安装所致）
+
+嫌麻烦的可以从这一步起参考PHP官方安装说明：http://php.net/manual/zh/install.unix.nginx.php
+
+./configure \
+--prefix=/usr/local/php \
+--with-config-file-path=/etc \
+--enable-fpm \
+--with-fpm-user=nginx \
+--with-fpm-group=nginx \
+--enable-inline-optimization \
+--disable-debug \
+--disable-rpath \
+--enable-shared \
+--enable-soap \
+--with-libxml-dir \
+--with-xmlrpc \
+--with-openssl \
+--with-mcrypt \
+--with-mhash \
+--with-pcre-regex \
+--with-sqlite3 \
+--with-zlib \
+--enable-bcmath \
+--with-iconv \
+--with-bz2 \
+--enable-calendar \
+--with-curl \
+--with-cdb \
+--enable-dom \
+--enable-exif \
+--enable-fileinfo \
+--enable-filter \
+--with-pcre-dir \
+--enable-ftp \
+--with-gd \
+--with-openssl-dir \
+--with-jpeg-dir \
+--with-png-dir \
+--with-zlib-dir \
+--with-freetype-dir \
+--enable-gd-native-ttf \
+--enable-gd-jis-conv \
+--with-gettext \
+--with-gmp \
+--with-mhash \
+--enable-json \
+--enable-mbstring \
+--enable-mbregex \
+--enable-mbregex-backtrack \
+--with-libmbfl \
+--with-onig \
+--enable-pdo \
+--with-mysqli=mysqlnd \
+--with-pdo-mysql=mysqlnd \
+--with-zlib-dir \
+--with-pdo-sqlite \
+--with-readline \
+--enable-session \
+--enable-shmop \
+--enable-simplexml \
+--enable-sockets \
+--enable-sysvmsg \
+--enable-sysvsem \
+--enable-sysvshm \
+--enable-wddx \
+--with-libxml-dir \
+--with-xsl \
+--enable-zip \
+--enable-mysqlnd-compression-support \
+--with-pear \
+--enable-opcache
+6.正式安装
+
+make && make install
+
+7.配置环境变量
+
+vi /etc/profile
+
+在末尾追加
+
+PATH=$PATH:/usr/local/php/bin
+export PATH
+执行命令使得改动立即生效
+
+
+source /etc/profile
+
+配置php-fpm
+
+cp php.ini-production /etc/php.ini
+cp /usr/local/php/etc/php-fpm.conf.default /usr/local/php/etc/php-fpm.conf
+cp /usr/local/php/etc/php-fpm.d/www.conf.default /usr/local/php/etc/php-fpm.d/www.conf
+cp sapi/fpm/init.d.php-fpm /etc/init.d/php-fpm
+chmod +x /etc/init.d/php-fpm
+
+启动php-fpm
+
+/etc/init.d/php-fpm start
+
+创建配置文件，并将其复制到正确的位置。
+
+cp php.ini-development /usr/local/php/php.ini
+cp /usr/local/etc/php-fpm.conf.default /usr/local/etc/php-fpm.conf
+cp sapi/fpm/php-fpm /usr/local/bin
+需要着重提醒的是，如果文件不存在，则阻止 Nginx 将请求发送到后端的 PHP-FPM 模块， 以避免遭受恶意脚本注入的攻击。
+
+将 php.ini 文件中的配置项 cgi.fix_pathinfo 设置为 0 。
+
+打开 php.ini:
+
+vim /usr/local/php/php.ini
+定位到 cgi.fix_pathinfo= 并将其修改为如下所示：
+
+cgi.fix_pathinfo=0
