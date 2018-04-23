@@ -1,0 +1,15 @@
+PyCharm (需要注册码)
+
+1 setting:  file -> setting 
+  1.1、pycharm新建程序自动补全编码和环境：   设置：可以在【File】-->【Settings】-->【Editor】-->【Code Style】的选项里进行设置    file and code template
+  2.2、pyCharm风格（配色方案）和字体的调整。  可以在【File】-->【Settings】 的 Editor的子选项里进行设置。 colors & fonts
+  
+
+设置virtualenv虚拟环境
+     安装virtualenv:  pip install virtualenv 
+     在ide中添加虚拟环境 setting ->project:项目 ->project interpreter ->add local	(不使用虚拟环境就直接设python安装路径)
+
+	
+
+
+

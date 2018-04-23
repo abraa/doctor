@@ -1,0 +1,41 @@
+1. 使用pip install pyspider 安装pyspider框架
+
+2. 使用pyspider命令启用脚本
+
+3. 访问http://localhost:5000/进入入html页面
+
+4. 点击create创建任务脚本
+
+5. 调试没问题点save保存脚本
+
+6. 点run运行脚本
+
+文档 http://www.pyspider.cn/book/pyspider/Deployment-6.html
+官网 http://docs.pyspider.org/en/latest/apis/
+
+需要运行js 安装需要 phantomjs
+
+一个使用教程 https://cuiqingcai.com/2652.html
+
+
+class Handler(BaseHandler):
+    crawl_config = {
+      "proxy":"172.16.2.2:3128",
+        "headers":{
+            "Proxy-Connection": "keep-alive",
+            "Pragma": "no-cache",
+            "Cache-Control": "no-cache",
+            "User-Agent": "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36",
+            "Accept": "*/*",
+            "DNT": "1",
+            "Accept-Encoding": "gzip, deflate, sdch",
+            "Accept-Language": "zh-CN,zh;q=0.8,en-US;q=0.6,en;q=0.4",
+
+        }
+    }
+---------------------------------------------------------------------------------------------
+
+pyspider --help 查看命令
+配置 >  pyspider --config  filename  使用配置文件
+
+启动  pyspider all 全部组件
