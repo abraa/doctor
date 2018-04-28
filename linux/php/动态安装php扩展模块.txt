@@ -1,5 +1,4 @@
 phpize			动态安装php扩展模块
-
 ./configure --enable-async-mysql
 sudo make
 sudo make install

@@ -1,0 +1,278 @@
+路由:
+	routes/web.php  这些路由被分配到了 web 中间件组   从而可以使用 session 和 csrf 保护等功能 (http/VerifyCsrfToken 中过滤 $except 数组加入需要忽略的路由名称)
+	Route::get($uri, $callback);
+	Route::post($uri, $callback);
+	Route::put($uri, $callback);
+	Route::patch($uri, $callback);
+	Route::delete($uri, $callback);
+	Route::options($uri, $callback);
+
+对大多数应用而言，都是从 routes/web.php 文件开始定义路由。定义在 routes/web.php 中的路由可以通过在浏览器地址栏输入相应的 URL 进行访问，例如，你可以通过 http://blog.dev/user 访问下面的路由  Route::get('/user', 'UsersController@index')
+
+	routes/api.php 路由是无状态的，这是因为被分配到了 api 中间件组。(没有http/VerifyCsrfToken 检查)
+
+	在这个路由中间件组中，所有路由会被自动添加 /api 前缀，所以你不需要再到路由文件中为每个路由手动添加，你可以通过编辑 RouteServiceProvider 类来修改路由前缀以及其他的路由中间件组选项：
+
+	可以通过 match 方法来实现。或者，使用 any 方法注册一个路由响应多种 HTTP 请求动作
+	Route::match(['get', 'post'], 'foo', function () {
+	    return 'This is a request from get or post';
+	});
+
+	Route::any('bar', function () {
+	    return 'This is a request from any HTTP verb';
+	});
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+CSRF 保护   (表单提交中带上 csrf_token 字段)
+在 routes/web.php 路由文件中所有请求方式为 PUT、POST 或 DELETE 的路由对应的 HTML 表单都必须包含一个 CSRF 令牌字段，否则，请求会被拒绝。关于 CSRF 的更多细节，可以参考 CSRF文档：
+
+<form method="POST" action="/profile">
+    {{ csrf_field() }}
+    ...
+</form>
+
+表单提交方式可以通过 <input type="hidden" name="_method" value="PUT">来修改 或 {{ method_field('PUT') }}
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+路由重定向
+Route::redirect('/here', '/there', 301);
+其中 here 表示原路由，there 表示重定向之后的路由，301 是一个 HTTP 状态码，用于标识重定向。
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+路由视图	(渲染页面) resources/views下页面
+Route::view('/welcome', 'welcome');
+Route::view('/welcome', 'welcome', ['name' => '学院君']);  //params[ULR,视图名称,数据数组]
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+路由参数
+有时我们需要在路由中获取 URI 请求参数。例如，如果要从 URL 中获取用户ID，需要通过如下方式定义路由参数：
+
+Route::get('posts/{post}/comments/{comment}', function ($postId, $commentId) {
+    return $postId . '-' . $commentId;
+});
+
+Route::get('user/{name?}', function ($name = null) {   //可选参数 当对应的路由参数为空时，使用默认值：
+    return $name;
+});
+
+
+Route::get('user/{id}/{name}', function ($id, $name) {	//正则约束  参数必须符合指定格式
+    // 同时指定 id 和 name 的数据格式
+})->where(['id' => '[0-9]+', 'name' => '[a-z]+']);
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+全局约束
+
+如果想要路由参数在全局范围内被给定正则表达式约束，可以使用 pattern 方法。需要在 RouteServiceProvider 类的 boot 方法中定义这种约束模式：
+
+/**
+ * 定义路由模型绑定，模式过滤器等
+ *
+ * @param  \Illuminate\Routing\Router  $router
+ * @return void
+ * @translator  http://laravelacademy.org
+ */
+public function boot()
+{
+    Route::pattern('id', '[0-9]+');
+    parent::boot();
+}
+一旦模式被定义，将会自动应用到所有包含该参数名的路由中：
+
+Route::get('user/{id}', function ($id) {
+    // 只有当 {id} 是数字时才会被调用
+});
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+命名路由
+命名路由为生成 URL 或重定向提供了方便，在路由定义之后使用 name 方法链的方式来定义该路由的名称：
+
+
+Route::get('user/profile', 'UserController@showProfile')->name('profile');
+这样我们就可以通过以下方式定义重定向：
+
+Route::get('redirect', function() {
+    // 通过路由名称进行重定向
+    return redirect()->route('profile');
+});
+为命名路由生成 URL
+
+// 生成URL
+$url = route('profile');
+
+// 生成重定向
+return redirect()->route('profile');
+如果命名路由定义了参数，可以将该参数作为第二个参数传递给 route 函数。给定的路由参数将会自动插入到 URL 中：
+Route::get('user/{id}/profile', function ($id) {
+    $url = route('profile', ['id' => 1]);
+    return $url;
+})->name('profile');
+
+检查当前路由
+
+如果你想要判断当前请求是否被路由到给定命名路由，可以使用 Route 实例上的 named 方法，例如，你可以从路由中间件中检查当前路由名称：
+
+
+public function handle($request, Closure $next)
+{
+    if ($request->route()->named('profile')) {
+        //
+    }
+
+    return $next($request);
+}
+
+------------------------------------------------------------------------------------------------------------------------
+
+路由分组
+Route::group
+
+中间件
+要给某个路由分组中定义的所有路由分配中间件，可以在定义分组之前使用 middleware 方法。中间件将会按照数组中定义的顺序依次执行：
+
+Route::middleware(['first', 'second'])->group(function () {
+    Route::get('/', function () {
+        // Uses first & second Middleware
+    });
+
+    Route::get('user/profile', function () {
+        // Uses first & second Middleware
+    });
+});
+
+
+命名空间
+路由分组另一个通用的例子是使用 namespace 方法分配同一个 PHP 命名空间给该分组下的多个控制器：
+
+Route::namespace('Admin')->group(function () {
+    // Controllers Within The "App\Http\Controllers\Admin" Namespace
+});
+默认情况下，RouteServiceProvider 在一个命名空间分组下引入所有路由文件，并指定所有控制器类所在的默认命名空间是 App\Http\Controllers，因此，我们在定义控制器的时候只需要指定命名空间 App\Http\Controllers 之后的部分即可。
+
+
+子域名路由
+路由分组还可以被用于处理子域名路由，子域名可以像 URI 一样被分配给路由参数，从而允许捕获子域名的部分用于路由或者控制器，子域名可以在定义分组之前调用 domain 方法来指定：
+
+Route::domain('{account}.blog.dev')->group(function () {
+    Route::get('user/{id}', function ($account, $id) {
+        return 'This is ' . $account . ' page of User ' . $id;
+    });
+});
+比如我们设置会员子域名为 account.blog.test，那么就可以通过 http://account.blog.test/user/1 访问用户ID为 1 的会员信息了：
+
+
+路由前缀
+prefix 方法可以用来为分组中每个路由添加一个给定 URI 前缀，例如，你可以为分组中所有路由 URI 添加 admin 前缀 ：
+
+Route::prefix('admin')->group(function () {
+    Route::get('users', function () {
+        // Matches The "/admin/users" URL
+    });
+});
+这样我们就可以通过 http://blog.test/admin/users 访问路由了。
+
+路由名称前缀
+name 方法可通过传入字符串为分组中的每个路由名称设置前缀，例如，你可能想要在所有分组路由的名称前添加 admin 前缀，由于给定字符串和指定路由名称前缀字符串完全一样，所以需要在前缀字符串末尾后加上 . 字符：
+
+Route::name('admin.')->group(function () {    // 5.5好像不行.. not found.
+    Route::get('users', function () {
+        // 新的路由名称为 "admin.users"...
+    })->name('users');
+});
+
+------------------------------------------------------------------------------------------------------------------------
+路由模型绑定
+
+注入模型 ID 到路由或控制器动作时，通常需要查询数据库才能获取相应的模型数据。你可以将匹配给定 ID 的整个 User 类实例注入到路由中，而不只是注入用户 ID。
+
+隐式绑定				
+Laravel 会自动解析定义在路由或控制器动作（变量名匹配路由片段）中的 Eloquent 模型类型声明，例如（我们将这个路由定义在 routes/api.php 文件中）：
+
+Route::get('users/{user}', function (App\User $user) {
+    return $user->email;
+});
+在这个例子中，由于类型声明了 Eloquent 模型 App\User，对应的变量名 $user 会匹配路由片段中的 {user}，这样，Laravel 会自动注入与请求 URI 中传入的 ID 对应的用户模型实例。如果匹配模型实例在数据库中不存在，会自动生成 404 响应。
+
+如果你想要在隐式模型绑定中使用数据表的其它字段，可以重写 Eloquent 模型类的 getRouteKeyName 方法：
+
+public function getRouteKeyName()
+{
+    return 'slug';
+}
+
+显式绑定			
+
+要注册显式绑定，需要使用路由的 model 方法来为给定参数指定绑定类。应该在 RouteServiceProvider 类的 boot 方法中定义模型绑定：
+
+public function boot()
+{
+    parent::boot();
+    Route::model('user', App\User::class);
+}
+接下来，定义一个包含 {user} 参数的路由：
+
+$router->get('profile/{user}', function(App\User $user) {
+     //		profile/1，就会注入一个用户 ID 为 1 的 User 实例。
+});
+
+自定义解析逻辑
+
+如果你想要使用自定义的解析逻辑，需要使用 Route::bind 方法，传递到 bind 方法的闭包会获取到 URI 请求参数中的值，并且返回你想要在该路由中注入的类实例：
+
+public function boot()
+{
+    parent::boot();
+
+    Route::bind('user', function($value) {
+        return App\User::where('name', $value)->first();
+    });
+}
+
+ Laravel 强大的数据库迁移功能创建 users 表，关于数据库迁移后面在数据库部分会详细讨论，这里我们通过以下命令来生成 users 表即可：
+
+> php artisan migrate
+Laravel 强大的数据库填充器来快速完成数据填充功能，首先通过如下命令生成 users 对应的数据表填充器：
+
+php artisan make:seeder UsersTableSeeder
+该命令会在 database/seeds 目录下生成一个 UsersTableSeeder 文件：
+最后执行 php artisan db:seed 即可插入对应数据到 users 表了，这样我们在浏览器中再次访问 http://blog.test/api/users/1 的时候就会显示 User 模型数据了：
+
+------------------------------------------------------------------------------------------------------
+
+访问当前路由
+你可以使用 Route 门面上的 current、currentRouteName 和 currentRouteAction 方法来访问处理当前输入请求的路由信息：
+
+// 获取当前路由实例
+$route = Route::current(); 
+// 获取当前路由名称
+$name = Route::currentRouteName();
+// 获取当前路由action属性
+$action = Route::currentRouteAction();
+
+
+-------------------------------------------------------------------------------------------------------------------
+频率限制
+Laravel 自带了一个中间件用于限制对应用路由的访问频率。开始使用该功能之前，分配 throttle 中间件到某个路由或路由分组，throttle 中间件接收两个参数用于判断给定时间内（单位：分钟）的最大请求次数。例如，我们指定登录用户每分钟只能访问下面的分组路由 60 次：
+
+Route::middleware('auth:api', 'throttle:60,1')->group(function () {
+    Route::get('/user', function () {
+        //
+    });
+});
+超出访问次数后，会返回 429 状态码并提示”Too many requests”。
+
+动态频率限制
+
+此外，还可以基于 User 模型的属性来动态设置最大请求次数。例如，如果 User 模型包含 rate_limit 属性，就可以将其这个属性名传递到 throttle 中间件，这样就可以将属性值作为计算最大请求次数的数据来源：
+
+Route::middleware('auth:api', 'throttle:rate_limit,1')->group(function () {
+    Route::get('/user', function () {
+        //
+    });
+});

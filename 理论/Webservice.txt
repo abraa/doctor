@@ -1,0 +1,22 @@
+使用php：
+
+
+    //调用接口
+    $parm = array('mobile' => ‘136XXXXXX’, 'mmsid' => 'XXX', 'sToken' => 'XXX');
+    $result = $client->SendPersonMMS($parm);
+
+    //获取返回值
+    $result = get_object_vars($result);  
+    echo $result["SendPersonMMSResult"]; 
+
+
+    1.WebService三要素：
+SOAP(Simple Object Access Protocol) 用来描述传递信息的格式
+
+WSDL(Web Services Description Language) 用来描述如何访问具体的接口
+
+UDDI(Universal Description Discovery and Integration) 用来管理，分发，查询WebService
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------
+简单说webservice就说调用远程接口,发起一个请求(传指定格式数据SOAP)

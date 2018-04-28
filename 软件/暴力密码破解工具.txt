@@ -1,0 +1,8 @@
+暴力破解工具-Hydra 8.1 windows版本/linux
+http://www.vuln.cn/2524
+https://github.com/maaaaz/thc-hydra-windows
+
+wget -q -O – http://www.atomicorp.com/installers/atomic | sh
+yum install hydra
+
+
