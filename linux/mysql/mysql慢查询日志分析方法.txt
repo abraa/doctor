@@ -1,0 +1,240 @@
+
+https://www.cnblogs.com/kimi9py/p/5735043.html
+
+本文主要介绍的是MySQL慢查询分析方法，前一段日子，我曾经设置了一次记录在MySQL数据库中对慢于1秒钟的SQL语句进行查询。想起来有几个十分设置的方法，有几个参数的名称死活回忆不起来了，于是重新整理一下，自己做个笔记。
+
+　　对于排查问题找出性能瓶颈来说，最容易发现并解决的问题就是MySQL慢查询以及没有得用索引的查询。
+
+　　OK，开始找出MySQL中执行起来不“爽”的SQL语句吧。
+
+　　MySQL慢查询分析方法一：
+
+　　这个方法我正在用，呵呵，比较喜欢这种即时性的。
+
+　　MySQL5.0以上的版本可以支持将执行比较慢的SQL语句记录下来。
+
+　　MySQL> show variables like 'long%';
+
+　　注：这个long_query_time是用来定义慢于多少秒的才算“慢查询”
+
+　　+-----------------+-----------+
+
+　　| Variable_name | Value |
+
+　　+-----------------+-----------+
+
+　　| long_query_time | 10.000000 |
+
+　　+-----------------+-----------+
+
+　　1 row in set (0.00 sec)
+
+　　MySQL> set long_query_time=1;
+
+　　注： 我设置了1, 也就是执行时间超过1秒的都算慢查询。
+
+　　Query OK, 0 rows affected (0.00 sec)
+
+　　MySQL> show variables like 'slow%';
+
+　　+---------------------+---------------+
+
+　　| Variable_name | Value |
+
+　　+---------------------+---------------+
+
+　　| slow_launch_time | 2 |
+
+　　| slow_query_log | ON |
+
+　　注：是否打开日志记录
+
+　　| slow_query_log_file | /tmp/slow.log |
+
+　　注： 设置到什么位置
+
+　　+---------------------+---------------+
+
+　　3 rows in set (0.00 sec)
+
+　　MySQL> set global slow_query_log='ON'
+
+　　注：打开日志记录
+
+　　一旦slow_query_log变量被设置为ON，MySQL会立即开始记录。
+
+　　/etc/my.cnf 里面可以设置上面MySQL全局变量的初始值。
+
+　　long_query_time=1 slow_query_log_file=/tmp/slow.log
+
+　　MySQL慢查询分析方法二:
+
+　　MySQLdumpslow命令
+
+　　/path/MySQLdumpslow -s c -t 10 /tmp/slow-log
+
+　　这会输出记录次数最多的10条SQL语句，其中：
+
+　　-s, 是表示按照何种方式排序，c、t、l、r分别是按照记录次数、时间、查询时间、返回的记录数来排序，ac、at、al、ar，表示相应的倒叙;
+
+　　-t, 是top n的意思，即为返回前面多少条的数据;
+
+　　-g, 后边可以写一个正则匹配模式，大小写不敏感的;
+
+　　比如
+
+　　/path/MySQLdumpslow -s r -t 10 /tmp/slow-log
+
+　　得到返回记录集最多的10个查询。
+
+　　/path/MySQLdumpslow -s t -t 10 -g “left join” /tmp/slow-log
+
+　　得到按照时间排序的前10条里面含有左连接的查询语句。
+
+ 
+
+简单点的方法：
+
+打开 my.ini ,找到 [mysqld] 在其下面添加   long_query_time = 2 log-slow-queries = D:/mysql/logs/slow.log #设置把日志写在那里，可以为空，系统会给一个缺省的文件 #log-slow-queries = /var/youpath/slow.log linux下host_name-slow.log log-queries-not-using-indexes   long_query_time 是指执行超过多长时间（单位是秒）的sql会被记录下来，这里设置的是2秒。
+
+以下是mysqldumpslow常用参数说明，详细的可应用mysqldumpslow -help查询。   -s，是表示按照何种方式排序，c、t、l、r分别是按照记录次数、时间、查询时间、返回的记录数来排序（从大到小），ac、at、al、ar表示相应的倒叙。   -t，是top n的意思，即为返回前面多少条数据。 www.2cto.com  -g，后边可以写一个正则匹配模式，大小写不敏感。   接下来就是用mysql自带的慢查询工具mysqldumpslow分析了（mysql的bin目录下 ），我这里的日志文件名字是host-slow.log。   列出记录次数最多的10个sql语句   mysqldumpslow -s c -t 10 host-slow.log   列出返回记录集最多的10个sql语句  mysqldumpslow -s r -t 10 host-slow.log   按照时间返回前10条里面含有左连接的sql语句   mysqldumpslow -s t -t 10 -g "left join" host-slow.log   使用mysqldumpslow命令可以非常明确的得到各种我们需要的查询语句，对MySQL查询语句的监控、分析、优化起到非常大的帮助
+
+ 
+
+ 
+
+ 
+
+在日常开发当中，经常会遇到页面打开速度极慢的情况，通过排除，确定了，是数据库的影响，为了迅速查找具体的SQL，可以通过Mysql的日志记录方法。
+
+-- 打开sql执行记录功能
+
+set global log_output='TABLE'; -- 输出到表
+
+set global log=ON; -- 打开所有命令执行记录功能general_log, 所有语句: 成功和未成功的.
+
+set global log_slow_queries=ON; -- 打开慢查询sql记录slow_log, 执行成功的: 慢查询语句和未使用索引的语句
+
+set global long_query_time=0.1; -- 慢查询时间限制(秒)
+
+set global log_queries_not_using_indexes=ON; -- 记录未使用索引的sql语句
+
+-- 查询sql执行记录
+
+select * from mysql.slow_log order by 1; -- 执行成功的：慢查询语句,和未使用索引的语句
+
+select * from mysql.general_log order by 1; -- 所有语句： 成功和未成功的.
+
+-- 关闭sql执行记录
+
+set global log=OFF;
+
+set global log_slow_queries=OFF;
+
+-- long_query_time参数说明
+
+-- v4.0, 4.1, 5.0, v5.1 到 5.1.20(包括):不支持毫秒级别的慢查询分析(支持精度为1-10秒);
+
+-- 5.1.21及以后版本 :支持毫秒级别的慢查询分析, 如0.1;
+
+-- 6.0 到 6.0.3: 不支持毫秒级别的慢查询分析(支持精度为1-10秒);
+
+-- 6.0.4及以后:支持毫秒级别的慢查询分析;
+
+通过日志中记录的Sql，迅速定位到具体的文件，优化sql看一下，是否速度提升了呢？
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+本文针对MySQL数据库服务器查询逐渐变慢的问题， 进行分析，并提出相应的解决办法，具体的分析解决办法如下：会经常发现开发人员查一下没用索引的语句或者没有limit n的语句，这些没语句会对数据库造成很大的影...
+
+ 
+
+ 
+
+ 
+
+ 
+
+本文针对MySQL数据库服务器查询逐渐变慢的问题， 进行分析，并提出相应的解决办法，具体的分析解决办法如下：
+
+会经常发现开发人员查一下没用索引的语句或者没有limit n的语句，这些没语句会对数据库造成很大的影响，例如一个几千万条记录的大表要全部扫描，或者是不停的做filesort，对数据库和服务器造成io影响等。这是镜像库上面的情况。
+
+而到了线上库，除了出现没有索引的语句，没有用limit的语句，还多了一个情况,mysql连接数过多的问题。说到这里，先来看看以前我们的监控做法 
+1. 部署zabbix等开源分布式监控系统，获取每天的数据库的io，cpu，连接数 
+2. 部署每周性能统计，包含数据增加量，iostat，vmstat，datasize的情况 
+3. Mysql slowlog收集，列出top 10
+
+以前以为做了这些监控已经是很完美了，现在部署了mysql节点进程监控之后，才发现很多弊端 
+第一种做法的弊端: zabbix太庞大，而且不是在mysql内部做的监控，很多数据不是非常准备，现在一般都是用来查阅历史的数据情况 
+第二种做法的弊端：因为是每周只跑一次，很多情况没法发现和报警 
+第三种做法的弊端: 当节点的slowlog非常多的时候，top10就变得没意义了，而且很多时候会给出那些是一定要跑的定期任务语句给你。。参考的价值不大 
+那么我们怎么来解决和查询这些问题呢
+
+对于排查问题找出性能瓶颈来说，最容易发现并解决的问题就是MYSQL的慢查询以及没有得用索引的查询。 
+OK，开始找出mysql中执行起来不“爽”的SQL语句吧。
+
+
+方法一： 这个方法我正在用，呵呵，比较喜欢这种即时性的。
+
+01	Mysql5.0以上的版本可以支持将执行比较慢的SQL语句记录下来。
+02	mysql> show variables like 'long%'; 注：这个long_query_time是用来定义慢于多少秒的才算“慢查询”
+03	+-----------------+-----------+
+04	| Variable_name | Value |
+05	+-----------------+-----------+
+06	| long_query_time | 10.000000 |
+07	+-----------------+-----------+
+08	1 row in set (0.00 sec)
+09	mysql> set long_query_time=1; 注： 我设置了1, 也就是执行时间超过1秒的都算慢查询。
+10	Query OK, 0 rows affected (0.00 sec)
+11	mysql> show variables like 'slow%';
+12	+---------------------+---------------+
+13	| Variable_name | Value |
+14	+---------------------+---------------+
+15	| slow_launch_time | 2 |
+16	| slow_query_log | ON | 注：是否打开日志记录
+17	| slow_query_log_file | /tmp/slow.log | 注： 设置到什么位置
+18	+---------------------+---------------+
+19	3 rows in set (0.00 sec)
+20	mysql> set global slow_query_log='ON' 注：打开日志记录
+21	一旦slow_query_log变量被设置为ON，mysql会立即开始记录。
+22	/etc/my.cnf 里面可以设置上面MYSQL全局变量的初始值。
+23	long_query_time=1
+24	slow_query_log_file=/tmp/slow.log
+方法二:mysqldumpslow命令
+
+01	/path/mysqldumpslow -s c -t 10 /tmp/slow-log
+02	这会输出记录次数最多的10条SQL语句，其中：
+03	-s, 是表示按照何种方式排序，c、t、l、r分别是按照记录次数、时间、查询时间、返回的记录数来排序，ac、at、al、ar，表示相应的倒叙；
+04	-t, 是top n的意思，即为返回前面多少条的数据；
+05	-g, 后边可以写一个正则匹配模式，大小写不敏感的；
+06	比如
+07	/path/mysqldumpslow -s r -t 10 /tmp/slow-log
+08	得到返回记录集最多的10个查询。
+09	/path/mysqldumpslow -s t -t 10 -g “left join” /tmp/slow-log
+10	得到按照时间排序的前10条里面含有左连接的查询语句。
+最后总结一下节点监控的好处 
+1． 轻量级的监控，而且是实时的，还可以根据实际的情况来定制和修改 
+2． 设置了过滤程序，可以对那些一定要跑的语句进行过滤 
+3． 及时发现那些没有用索引，或者是不合法的查询，虽然这很耗时去处理那些慢语句，但这样可以避免数据库挂掉，还是值得的 
+4. 在数据库出现连接数过多的时候，程序会自动保存当前数据库的processlist，DBA进行原因查找的时候这可是利器
+5. 使用mysqlbinlog 来分析的时候，可以得到明确的数据库状态异常的时间段 
+有些人会建义我们来做mysql配置文件设置
+
+调节tmp_table_size 的时候发现另外一些参数 
+Qcache_queries_in_cache 在缓存中已注册的查询数目 
+Qcache_inserts 被加入到缓存中的查询数目 
+Qcache_hits 缓存采样数数目 
+Qcache_lowmem_prunes 因为缺少内存而被从缓存中删除的查询数目 
+Qcache_not_cached 没有被缓存的查询数目 (不能被缓存的，或由于 QUERY_CACHE_TYPE) 
+Qcache_free_memory 查询缓存的空闲内存总数 
+Qcache_free_blocks 查询缓存中的空闲内存块的数目 
+Qcache_total_blocks 查询缓存中的块的总数目 
+Qcache_free_memory 可以缓存一些常用的查询,如果是常用的sql会被装载到内存。那样会增加数据库访问速度

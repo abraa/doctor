@@ -1,0 +1,11 @@
+git Couldn't load this key (OpenSSH SSH-2 private key)
+解决方法：
+1）运行PuTTYGen，点击load，选择ssh-keygen生成的私钥文件所在位置，比如id_rsa文件。
+
+2）点击Save private key按钮，将其保存为.ppk文件。
+
+3）打开Pageant，点击Add Key，选择前一步所保存的.ppk文件所在的位置即可。
+-------------------------------------------------------------------
+TortoiseGit通过SSH执行git clone报错SSH2_MSG_UNIMPLEMENTED
+解决方法：
+在git - setting - network - 下面路径C:\Program Files\TortoiseGit\bin\TortoiseGitPlink.exe  -> 改成同目录下的TortoisePlink.exe即可
