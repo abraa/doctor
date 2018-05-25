@@ -1,0 +1,4 @@
+1.指定
+config 文件
+remote "origin"
+	puttykeyfile = C:\\Users\\Administrator\\.ssh\\liegou_private2.ppk
