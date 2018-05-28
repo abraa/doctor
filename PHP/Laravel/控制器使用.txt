@@ -1,0 +1,2 @@
+路由调用控制器
+Route::get('/login', 'Admin\UserController@login');

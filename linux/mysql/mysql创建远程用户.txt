@@ -1,0 +1,25 @@
+create user test identified by '123456';
+
+grant all privileges on *.* to 'test'@'%'identified by '123456' with grant option;
+
+flush privileges ;
+
+我以为就此收工了，等等，程序怎么还是连不上去，还是 access deny ;
+
+难道端口不是3306吗，打开 mysql配置文件，是默认的3306，接着往下面看，发现一个关键地方；
+
+bind-address           = 127.0.0.1
+ 
+
+原来这里mysql默认绑定了本地ip，不接受其他来源；注释掉，重启mysql 一切OK；
+
+还有两个常用操作；
+
+修改指定用户密码
+
+update mysql.user set password=password('新密码') where User="test" and Host="localhost";
+ 
+
+删除用户
+
+delete from user where User='test' and Host='localhost';

@@ -12,3 +12,5 @@ git pull origin master
 #git reset --hard origin/master
 
 记得这个文件和部署文件夹要有权限 chown -R gituser.git ...
+
+注2:记得本地的git clone /opt/lampp/www/appgit/htdoc		直接路径不要指定用户和ip(会要你输入密码的)
