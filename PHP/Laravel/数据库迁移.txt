@@ -1,0 +1,2 @@
+‘À––«®“∆
+php artisan migrate
