@@ -1,0 +1,18 @@
+首先下载php的mongodb扩展
+wget https://pecl.php.net/get/mongodb-1.1.10.tgz
+解压安装包
+tar zxf mongodb-1.1.10.tgz
+运行 /opt/lampp/bin/phpize
+安装编译
+　上述命令运行完后，在目录下就生成了configure文件
+使用./configure命令进行安装配置，然后使用make && make install进行编译安装，命令如下：
+
+　　./configure --with-php-config=/usr/local/php/bin/php-config
+
+　　--with-php-config这个参数是告诉配置脚本php-config这个程序的路径
+
+这时用make来编译扩展
+
+　　make && make install
+
+然后在php.ini中加上extension=mongodb.so

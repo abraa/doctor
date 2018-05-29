@@ -1,0 +1,25 @@
+1.修改配置文件mongodb.conf
+
+命令：vim /etc/mongodb.conf  （即使用配置文件启动mongodb）
+
+把 bind_ip=127.0.0.1 这一行注释掉或者是修改成 bind_ip=0.0.0.0
+
+ 
+
+2.重启mongodb服务
+
+命令：/etc/init.d/mongodb restart
+
+2.1防火墙开放27017端口
+
+命令：iptables -A INPUT -p tcp -m state --state NEW -m tcp --dport 27017 -j ACCEPT
+
+ 
+
+3.远程连接
+
+要连接的IP：134.567.345.23
+
+命令：mongo 134.567.345.23:27017
+
+这样就可以连接到134.567.345.23的mongodb/test的数据库

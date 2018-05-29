@@ -1,0 +1,69 @@
+1.安装 
+	https://www.mongodb.com/download-center#community下载对应版本安装
+源码安装
+tar -zxvf mongodb-linux-x86_64-2.6.7.tgz
+mv mongodb-linux-x86_64-2.6.7/ /usr/local/mongodb
+cd /usr/local/mongodb
+mkdir data	//数据库目录
+mkdir log	//日志目录
+cd bin
+./mongod -dbpath=/usr/local/mongodb/data -logpath=/usr/local/mongodb/logs
+mongod --config /etc/mongod.conf	#使用配置文件
+---------------------------------------------------------------
+自启动
+1.先在init.d目录下创建mongodb服务脚本
+2.设置开机自启动
+
+systemctl enable mongodb.service
+
+---------------------------------------------------------------
+2.服务启动
+mongod -f /etc/mongodb.cnf  //配置文件启动
+mongod --dbpath D:\DB\Mongodb\data1       //数据库
+--logpath D:\DB\Mongodb\data2\replset.log  --logappend  //日志
+--replSet shard1         //集群
+ --port 10001  //端口
+--directoryperdb //每个数据库单独目录
+--serviceName MongoDB1 -install   //服务
+
+mongod --dbpath D:\DB\Mongodb\data1  --replSet shard1 --port 10001  --logappend 
+
+3.指定端口登录  mongo 127.0.0.1:10001
+
+4.Replica Set 副本集配置
+已先设置 --replSet shard1   
+rs.initiate({_id : "shard1", configsvr: true, members : [{_id : 0, host : "127.0.0.1:27017"}]})
+rs.add("127.0.0.1:10001")
+rs.addArb("127.0.0.1:10002")   //添加
+rs.reconfig(cfg)    //重新配置
+
+4.2 config server 配置
+configsvr  
+ mongod -configsvr -dbpath /home/mongodb/data/shard1/config -port 40000 -logpath /home/mongodb/data/shard1/config.log -logappend -fork  
+
+5.分片
+启动mongos
+#mongos的数量不受限制，通常应用一个服务器运行一个mongos
+
+~]# mongos --port 40000 --configdb 192.168.211.217:10000,192.168.211.217:20000,192.168.211.217:30000 --logpath /data/mongodb/mongos/logs/mongos1.log  --logappend --fork  //--fork 后台启动 必须加logpath
+ mongos> use admin
+db.runCommand({"addShard":"shard1/192.168.211.217:10001"})  //添加配置服务器（csv）
+db.runCommand({listshards:1})
+ db.runCommand( { enablesharding : “” } );		// 不同数据库在不同片，一个数据库只在一片
+db.runCommand({"enablesharding":"test"})		//分片数据库 不同集合在不同片，一个集合只在一片
+db.runCommand({"enablesharding":"test.coll"，"key":{"_id":1}})		//分片数据集合  索引自动生成，也可以自己生成
+
+6.创建数据库
+use mydb
+show dbs  //显示数据库列表
+db  	 //查看当前数据库
+
+7.增、删、改、查
+db.users.insert({}）	//插入 包括insertOne({});和insertMany（[{},{}]）
+db.users.deleteMany({})   db.users.remove({})    //删除所有
+db.users.remove( { status: "D" }, 1)  db.users.deleteOne( { status: "D" } )  //删除一个
+db.collection.drop() //删除集合
+
+8.创建索引
+db.driverPosition.createIndex({“oid”:1})
+db.driverPosition.createIndex({“createtime”:1}, {expireAfterSeconds:1200})
