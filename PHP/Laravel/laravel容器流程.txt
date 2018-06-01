@@ -1,0 +1,35 @@
+https://segmentfault.com/a/1190000015072320
+1.require bootstrap/app.php
+ 这个文件会实例化一个容器 new Illuminate\Foundation\Application
+实例化的时候会执行
+ 	$this->registerBaseBindings();  		//向容器注册bound几个实例(容器共享对象)     protected $instances = [];
+
+        $this->registerBaseServiceProviders();		//向容器注入几个ServiceProvider(Log,Route,Event)
+
+        $this->registerCoreContainerAliases();		//向容器注入一些对象的别名（键值对）
+
+
+$app->singleton(					//向容器注入单例 key=>value + call_user_fun实现多态
+    Illuminate\Contracts\Http\Kernel::class,
+    App\Http\Kernel::class
+);
+。。
+
+$kernel = $app->make(Illuminate\Contracts\Http\Kernel::class); 	//实例化Kernel（前面注册的那个）
+Contextual 在5.6出来感觉addContextualBinding($concrete, $abstract, $implementation) 多一个参数之外，没啥区别
+唯一的作用似乎就是判断是否存在然后取出$implementation ？ 其实作用应该是可以通过$concrete, $abstract获取$implementation
+
+
+$response = $kernel->handle(			//处理传入的http请求
+    $request = Illuminate\Http\Request::capture()		// Illuminate HTTP request
+);
+
+$response->send();		//输出结果
+
+$kernel->terminate($request, $response);	//终止其他组件 ，如：Middleware
+
+//其他的比如路由，都是由Kernel之类的服务自己去完成的。
+比如app.php配置的providers，alias 都是在Kernel的$bootstrappers 中导入对应的处理对象RegisterFacades::class,RegisterProviders::class,
+
+
+如果要在代码结束后执行应当走app->$this->terminatingCallbacks[无数匿名函数]

@@ -1,0 +1,116 @@
+单元测试使用的是phpunit
+文档地址 http://phpunit.readthedocs.io/zh_CN/latest/textui.html
+执行 phpunit 测试所有文件
+phpunit tests/Unit/ExampleTest.php  测试指定文件
+当 PHPUnit 命令行测试执行器指向一个目录时，它会在目录下查找 *Test.php 文件。
+--------------------------------------------------------
+测试用例的执行顺序
+TemplateMethodsTest::setUpBeforeClass			//最开始执行一次
+TemplateMethodsTest::setUp
+TemplateMethodsTest::assertPreConditions
+TemplateMethodsTest::testOne
+TemplateMethodsTest::assertPostConditions		//断言成功(全部成功才行) 在tearDown之前执行
+TemplateMethodsTest::tearDown
+.TemplateMethodsTest::setUp
+TemplateMethodsTest::assertPreConditions
+TemplateMethodsTest::testTwo
+TemplateMethodsTest::tearDown
+TemplateMethodsTest::onNotSuccessfulTest		//断言失败（只要有一个失败）	 在tearDown之后执行 Exception
+FTemplateMethodsTest::tearDownAfterClass		//最后执行一次
+------------------------------------------------------------
+phpunit通过断言来判断代码是否正确执行
+可以自己重写断言方法 
+参考static::assertTrue()
+自己写个自定义的Constraint 比如Tests\Constraint\CustomizeConstraint 重写toString() 断言失败的时候这个会输出
+重写matches($other) 返回bool 判断断言是成功还是失败
+------------------------------------------------------------------
+所有phpunit怎么用？
+
+单元测试的四个阶段：
+
+建立基境(fixture)
+
+执行被测系统
+
+验证结果
+
+拆除基境(fixture)
+
+什么是基境(fixture)？
+
+基境(fixture)是对开始执行某个测试时应用程序和数据库所处初始状态的描述。
+
+-----------------------------------------------------------------
+Stubs （桩件）（上桩）
+ // 为 SomeClass 类创建桩件。
+        $stub = $this->createMock(SomeClass::class);
+
+        // 配置桩件。
+        $stub->method('doSomething')
+             ->willReturn('foo');		//直接设定返回结果 $stub->doSomething() ==='foo'
+
+仿件对象(Mock Object)
+将对象替换为能验证预期行为（例如断言某个方法必会被调用）的测试替身的实践方法称为*模仿(mocking)*。
+
+prophecy测试替身框架https://github.com/phpspec/prophecy#how-to-use-it
+	$subject = new Subject('My subject');
+
+        // 为 Observer 类建立预言(prophecy)。
+        $observer = $this->prophesize(Observer::class);
+
+        // 建立预期状况：update() 方法将会被调用一次，
+        // 并且将以字符串 'something' 为参数。
+        $observer->update('something')->shouldBeCalled();
+
+        // 揭示预言，并将仿件对象链接到主体上。
+        $subject->attach($observer->reveal());
+
+        // 在 $subject 对象上调用 doSomething() 方法，
+        // 预期将以字符串 'something' 为参数调用
+        // Observer 仿件对象的 update() 方法。
+        $subject->doSomething();
+------------------------------------------------------------------
+数据库测试
+
+    public function getConnection()			//使用pdo建立数据库连接
+    {
+       //建立连接代码
+    }
+
+    /**
+     * @return PHPUnit_Extensions_Database_DataSet_IDataSet
+     */
+    public function getDataSet()			//自定义初始化数据库数据
+    {
+        return $this->createXMLDataSet(dirname(__FILE__).'/_files/guestbook-seed.xml');
+    }
+
+-------------------------------
+<?xml version="1.0" ?>		XML DataSet
+<dataset>
+    <table name="guestbook">
+        <column>id</column>
+        <column>content</column>
+        <column>user</column>
+        <column>created</column>
+        <row>
+            <value>1</value>
+            <value>Hello buddy!</value>
+            <value>joe</value>
+            <value>2010-04-24 17:15:23</value>
+        </row>
+        <row>
+            <value>2</value>
+            <value>I like it!</value>
+            <null />
+            <value>2010-04-26 12:14:20</value>
+        </row>
+    </table>
+</dataset>
+------------------------------------------------------------------
+在使用单元测试来确认重构的转换步骤中确实保持原有行为并且没有引入错误时，以下情况有助于改进项目的编码与设计：
+
+所有单元测试均正确运行。
+代码传达其设计原则。
+代码没有冗余。
+代码所包含的类和方法的数量降至最低。

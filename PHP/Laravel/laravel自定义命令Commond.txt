@@ -1,0 +1,36 @@
+https://laravel-china.org/index.php/docs/laravel/5.6/artisan/1385
+
+1.定义
+	执行php artisan make:command SendEmails
+2.注册
+	app/console/Commonds目录下的会自动注册 其他的在console/Kernel中手动添加到$commomd
+3. 命令名称
+      /**
+     * 控制台命令名称
+     *
+     * @var string
+     */
+	protected $signature = 'redis:subscribe';
+
+    /**
+     * 控制台命令描述
+     *
+     * @var string
+     */
+    protected $description = 'Subscribe to a Redis channel';
+
+    /**
+     * 执行控制台命令
+     *
+     * @return mixed
+     */
+    public function handle()
+	{	//执行代码
+	}
+4.执行方式
+	php artisan redis:subscribe  参数
+
+参数
+protected $signature = 'laravel:academy {name=LaravelAcademy} {--mark=!}';
+ $name = $this->argument('name');
+    $mark = $this->option('mark');

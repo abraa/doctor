@@ -1,0 +1,8 @@
+1. 先到VirtualBox 安装目录执行
+ vboxmanage list vms  查看虚拟机名称
+
+2. 执行
+ vagrant package –base newbox_default_1503366286622_12977 –output ./CentOS7.box 
+
+–base 源虚拟机名称
+- output 你新建的box名称

@@ -1,0 +1,31 @@
+要创建一个新的中间件，可以通过 Artisan 命令 make:middleware：
+
+php artisan make:middleware CheckToken
+
+理解中间件的最好方式就是将中间件看做 HTTP 请求到达目标动作之前必须经过的“层”，即到达目前前先执行的代码。
+比如路由
+Route::get('/', function () {
+    //
+})->middleware('token');
+
+全局中间件在Kernel中被调用，即每个请求都会走
+
+  public function handle($request, Closure $next)		//调用时执行
+    {
+        return $next($request);				//写在这行前面的是之前执行，后面的就是之后
+    }
+
+    public function terminate($request, $response)		//注销时执行
+    {
+        // 存储session数据...
+    }
+
+中间件组
+有时你可能想用单一的 键 为几个中间件分组，使其更容易分配到路由。可以使用 Kernel 类的 $middlewareGroups 属性来实现。
+
+为路由分配中间件
+如果要为特定的路由分配中间件，
+默认情况下，Kernel 类的 $routeMiddleware
+
+全局中间件
+如果你想让中间件在你应用的每个 HTTP 请求期间运行，只需在 app/Http/Kernel.php 类中的 $middleware 属性里列出这个中间件类 。

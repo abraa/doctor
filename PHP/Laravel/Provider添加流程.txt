@@ -1,0 +1,20 @@
+从某种意义上说，服务提供者有点类似HTTP控制器，HTTP控制器用于为相关路由注册提供统一管理，而服务提供者用于为相关服务容器提供统一绑定场所，此外服务提供者还可以做一些初始化启动操作。Laravel的每个核心组件都对应一个服务提供者，可以这么说，服务提供者是Laravel的心脏，是Laravel的核心，核心组件类在这里完成注册、初始化以供后续调用。
+-------------------------------------------------------------------------
+注意：并不是所有第三方的pacakges都需要一个service provider.事实上，甚至不需要service provider来保证第三方组件正常工作，原因是service provider本身只完成bootstrap component的功能（注册给ioc container）。不过service provider确实提供了一个组织第三方component的bootstrap代码及binding ioc的一个方便的地方，值得使用！
+------------------------------------------------------------------------
+创建服务提供者
+php artisan make:provider TestServiceProvider
+该命令会在app/Providers目录下生成一个TestServiceProvider.php文件
+---------------------------------------------------------------------------
+
+1. 首先在config/app.php中添加'providers'=>[ App\Providers\YourServiceProvider::class] //注册服务提供者
+2. 在YourServiceProvider中继承ServiceProvider
+3. 在YourServiceProvider
+function boot		//启动 在所有provider注册成功后才执行，这里执行想做的任何操作
+
+function register    //只绑定事物到服务容器 进入Application在框架booting up 时执行
+
+------------------------------------------------------------------
+lazy-load service provider for each request
+Deferred Providers  延迟加载 Providers
+只有在你make时才会register 然后boot 就是只会在你使用时才会加载，正常的provider在框架booting up 时就会加载
