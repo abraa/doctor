@@ -1,0 +1,97 @@
+简单的观察者模式实现，允许你订阅和监听应用中的事件
+注册事件/监听器
+EventServiceProvider ->listen [
+	'App\Events\Event'=>['App\Listeners\Listen']	
+]
+
+运行 php artisan event:generate 命令 会生成EventServiceProvider 中所有时事件和监听器
+
+
+手动注册
+在 EventServiceProvider 的 boot 方法
+/**
+ * 注册应用的其它事件.
+ *
+ * @return void
+ */
+public function boot()
+{
+    parent::boot();
+
+    Event::listen('event.name', function ($foo, $bar) {		//事件类，处理函数
+        //
+    });
+}
+
+
+停止事件继续往下传播
+
+有时候，你希望停止事件被传播到其它监听器，你可以通过从监听器的 handle 方法中返回 false 来实现。
+-----------------------------------------------------------------------------------------
+监听器队列处理
+
+要指定某个监听器需要放到队列，只需要让监听器类实现 ShouldQueue 接口即可
+
+class SendShipmentNotification implements ShouldQueue
+{
+    /**
+     * 自定义的任务将被推送到的连接名称.
+     *
+     * @var string|null
+     */
+    public $connection = 'sqs';
+
+    /**
+     * 自定义的任务将被推送到的连接名称.
+     *
+     * @var string|null
+     */
+    public $queue = 'listeners';
+}
+----------------------------------------------------------------------------------------
+分发事件
+要分发一个事件，可以传递事件实例到辅助函数 event，这个辅助函数会分发事件到所有注册的监听器。由于辅助函数 event 全局有效，所以可以在应用的任何地方调用它：
+ event(new OrderShipped($order));  //一个实例化event类
+
+事件订阅者
+
+namespace App\Listeners;
+
+// 一个监听器中处理多个Event 需要定义一个 subscribe 方法
+class UserEventSubscriber
+{
+    /**
+     * 处理用户登录事件.
+     * @translator laravelacademy.org
+     */
+    public function onUserLogin($event) {}
+
+    /**
+     * 处理用户退出事件.
+     */
+    public function onUserLogout($event) {}
+
+    /**
+     * 为订阅者注册监听器.
+     *
+     * @param  Illuminate\Events\Dispatcher  $events
+     */
+    public function subscribe($events)
+    {
+        $events->listen(
+            'Illuminate\Auth\Events\Login',
+            'App\Listeners\UserEventSubscriber@onUserLogin'
+        );
+
+        $events->listen(
+            'Illuminate\Auth\Events\Logout',
+            'App\Listeners\UserEventSubscriber@onUserLogout'
+        );
+    }
+
+}
+
+注册事件订阅者
+EventServiceProvider ->$subscribe = [
+         'App\Listeners\UserEventSubscriber',		//要注册的订阅者
+    ];

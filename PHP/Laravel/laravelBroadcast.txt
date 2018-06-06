@@ -1,0 +1,111 @@
+配置
+应用的所有事件广播配置选项都存放在 config/broadcasting.php
+配置文件中。Laravel 开箱支持多种广播驱动： Pusher
+、 Redis
+以及一个服务于本地开发和调试的 log
+驱动。此外，还提供了一个 null
+驱动用于完全禁止事件广播。每一个驱动在 config/broadcasting.php
+配置文件中都有一个配置示例。
+
+广播服务提供者
+在广播任意事件之前，首先需要注册 AppProvidersBroadcastServiceProvider
+。在新安装的 Laravel 应用中，你只需要取消 config/app.php
+配置文件中 providers
+数组内对应服务提供者之前的注释即可。该提供者允许你注册广播授权路由和回调。
+
+广播事件种类：
+
+public：谁都可以收听的广播
+private：只有指定用户可以收到的广播
+presence：不仅可以收听到跟你有关的广播，还可以跟别的用户互动，适合做聊天室
+================================================================================
+事件的广播机制流程：
+
+Laravel 通过 broadcasting 机制发布一个Event对象到Redis
+Laravel Queue Worker 读取该Event对象，并使用Redis的Sub/Pub机制将该 Event对象发布出去
+laravel-echo-server  通过 Redis 的 Sub/Pub机制收听到该 Event
+由于 laravel-echo 使用 socket.io 跟 laravel-echo-server相连接。所以 laravel-echo 会通过socket.io将Event对象发送给laravel-echo
+laravel-echo解析通过 socket.io接收到的 Event对象
+------------------------------------------------------------------------------
+
+当前客户端的socket ID
+当你初始化 Laravel Echo 实例的时候，需要给连接分配一个 socket ID。如果你使用的是 Vue
+和 Axios
+，这个 socket ID 会以 X-Socket-ID
+头的方式自动添加到每个输出请求。当你调用 toOthers
+方法时，Laravel 会从请求头中解析这个 socket ID 并告知广播不要广播到带有这个 socket ID 的连接。
+
+如果你没有使用 Vue 和 Axios，则需要手动配置 JavaScript 应用发送 X-Socket-ID
+请求头。你可以使用 Echo.socketId
+方法获取这个 socket ID：
+
+var socketId = Echo.socketId();
+
+================================================================================
+简单步骤
+1. 取消app.config  App\Providers\BroadcastServiceProvider::class,注释 //注册广播服务
+
+---------------------------------------------
+2. 打开广播路由配置文件 routes/channels.php   return true // 无论收听者是谁，他都会收听到最新的广播
+
+---------------------------------------------
+3. 设置redis
+	 .env文件 QUEUE_DRIVER=redis 
+
+---------------------------------------------
+4. 建立Event
+php artisan make:event NewsEvent 
+	实现 ShouldBroadcast //   implements ShouldBroadcast  
+
+---------------------------------------------
+5. 发布广播
+	  broadcast(new NewsEvent(date('Y-m-d h:i:s A').": BIG NEWS!"));
+
+---------------------------------------------
+6.让Laravel Queue Worker消费Event
+ php artisan queue:work  	//每次广播Event都会自动捕获
+	
+---------------------------------------------
+7. 让 laravel-echo-server 订阅Redis Sub
+使用npm安装laravel-echo-server
+npm install -g laravel-echo-server  
+
+初始化 laravel-echo-server init  
+
+它会帮你在项目根目录下生成 laravel-echo-server.json
+将 devMode 修改为 true
+
+laravel-echo-server start  
+laravel-echo-server使用的是 6001 端口，所以记得去 Homestead.yaml里面添加6001 端口的映射
+- send: 6001  
+  to: 6001  
+
+npm i --save socket.io-client  
+npm i --save laravel-echo 							//npm安装记得不要在挂载盘上，可能是因为我phpstorm开着的原因。。报文件繁忙
+---------------------------------------------
+8.测试页面
+打开 /resources/assets/js/bootstrap.js 你会发现在这个文件的结尾已经预先写上了 laravel-echo 的使用例子
+改成
+import Echo from 'laravel-echo'
+window.io = require('socket.io-client');
+
+window.Echo = new Echo({
+    broadcaster: 'socket.io',
+    host: window.location.hostname + ':6001'
+}); 
+创建页面  resources/views/newsroom.blade.php 
+<script src="{{ mix('js/app.js') }}"></script>  
+<script>  
+    Echo.channel('news')  
+        .listen('News', (e) => {  
+        console.log(e.message);  
+    });  
+</script>  
+添加路由
+Route::view('newsroom', 'newsroom');  
+====================================================
+基本构建
+ npm install 
+npm run dev  	//dev
+重新启动laravel-echo-server
+laravel-echo-server start
