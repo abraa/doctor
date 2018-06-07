@@ -6,3 +6,5 @@
 
 –base 源虚拟机名称
 - output 你新建的box名称
+
+导入的时候名字最好和导出的一致 homestead-7 （vagrant up 可能会出错）
