@@ -1,0 +1,5 @@
+1、下载nginx-rtmp-module： nginx-rtmp-module的官方github地址：https://github.com/arut/nginx-rtmp-module
+
+使用命令： git clone https://github.com/arut/nginx-rtmp-module.git
+
+将nginx-rtmp-module下载到linux中。
