@@ -1,0 +1,146 @@
+1. 区分 rpm -qi -qf  -ql  -qa四个不同选项组合的作用？
+
+答：rpm -qi 包名	查看一个包的详细信息
+
+rpm -qf 文件名	查看一个文件是由哪个包安装的
+
+rpm -ql 包名	查看一个包安装了哪些文件
+
+rpm -qa	查看系统中安装了哪些包
+
+2. rpm -qi 后面如果跟一个未安装的包名，会显示什么信息？
+
+答：包名 is not installed
+
+3. 请找出 vim 这个命令是由哪个rpm包安装来的？
+
+答：rpm -qf `which vim`
+
+4. 使用rpm安装和卸载某个包的命令是什么？
+
+答：安装：rpm -i 包名 或 rpm --install 包名
+
+卸载：rpm -e 包名 或 rpm --erase 包名
+
+5. rpm安装某个包有依赖关系时，如何忽略依赖关系，强制安装该包？
+
+答：rpm -i --nodeps 包名
+
+6. 如何使用rpm升级一个包？
+
+答：rpm -Uvh	包名
+
+7. 使用yum搜索包含关键词 "tidy" 的rpm包，并安装，安装后再使用yum将其卸载。
+
+答：yum list |grep tidy
+
+yum install -y tidy
+
+yum remove tidy
+
+8. 如何使用yum来下载一个rpm包？
+
+答：yum install -y yum-plugin-downloadonly	#安装下载插件
+
+yum install 包名 --downloadonly --downloaddir=/tmp/	#仅下载一个没安装的包vte到目录/tmp/下
+
+yum reinstall 包名 --downloadonly --downloaddir=/tmp/	#下载一个安装过的包
+
+9. 请到php的官方网站下载一个php的源码包，动手试试编译安装它？（php官网地址 http://www.php.net/)
+
+答：下载源码包php-7.1.0.tar.gz
+
+tar -zxvf php-7.1.0.tar.gz
+
+cd php-7.1.0
+
+./configure --prefix=/usr/local/php7
+
+报错：configure: error: xml2-config not found. Please check your libxml2 installation.
+
+yum list |grep xml2
+
+yum install -y libxml2*
+
+./configure --prefix=/usr/local/php7	配置
+
+echo $?	返回0表示配置成功
+
+make	编译
+
+echo $?	返回0表示编译成功
+
+make install	安装
+
+echo $?	返回0表示安装成功
+
+10. 查资料搞明白 yum upgrade 以及 yum update 两者的区别？它们在什么情况下使用？
+
+答：yum --help看到：
+
+update         更新系统中的一个或多个软件包
+
+upgrade       更新软件包同时考虑软件包取代关系
+
+yum upgrade与yum update都能更新系统的所有软件包，不同的就是upgrade相当一次大规模的升级，连带了旧的要淘汰的包也升级。update 和 upgrade 的侧重点不一样，update主要是使软件达到最新，但upgrade更侧重的是软件功能得到一个很大的提升，区别于频繁的发布最新的补丁。upgrade不改变软件设置和系统设置，系统版本升级，内核不改变；update改变软件设置和系统设置,系统版本内核都升级。
+
+   yum upgrade : 用于大规模的版本升级,更新Linux系统和整个软件版本
+
+   yum update :  用于安装补丁文件，更新内核和软件包到最新
+
+11. 如何查看Linux系统中(CentOS）是否安装过某个包？
+
+答：yum list installed | grep 包名 或者 rpm -qa | grep 包名
+
+12. ./configure 完成后，并不知道到底有没有成功，用什么命令可以验证呢？
+
+答： 使用“echo $?”命令查看上条命令执行是否成功，返回码为“0”表示成功，非零表示出错。
+
+13.  如果在./configure 这一步出现这样的错误"configure: error: no acceptable C compiler found in $PATH" 我们该怎么办？
+
+答：表示在当前用户的环境变量$PATH指示的路径中没有找到可用的C编译器，需要安装gcc :
+
+yum install -y gcc  
+
+14. 有时，你忘记某个编译参数是如何写的，你怎么办？
+
+答：查看帮助文档，README，INSTALL，CONFIGURE等，或者使用./configure --help
+
+15. 如何使用光盘构建yum仓库？
+
+答：mount /dev/cdrom /mnt/
+
+cd /etc
+
+cp -r yum.repos.d/ yum.repos.d.bak	将配置文件文件夹备份
+
+cd yum.repos.d	切换到配置文件夹下
+
+rm -rf CentOS-Base.repo	删掉配置文件CentOS-Base.repo，不使用网络yum源
+
+vim CentOS-Media.repo	编辑配置文件CentOS-Media.repo
+
+修改其内容如下：
+
+[local_cdrom]
+
+name=cd
+
+baseurl=file:///mnt/
+
+gpgcheck=0
+
+enabled=1
+
+#gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-6~
+
+Esc:wq
+
+yum list	右侧的名字变成了local_cdrom
+
+yum grouplist	查看本地yum可用的包
+
+LANG=en	切换到英文
+
+yum groupinstall -y "Khmer Support"	从制作好的本地yum源安装一个语言套件
+

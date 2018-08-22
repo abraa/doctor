@@ -1,0 +1,25 @@
+
+	App::setLocale($lang);   代码设置本地语言
+
+{{trans('auth.username')}}   模板中使用
+
+
+config中定义
+'locale' => 'zh',	//当前语言
+
+'fallback_locale' => 'en',	//备用语言
+
+翻译文件所在目录为resources/lang，在此创建 zh/auth.php文件
+return [ 
+
+    'username'=>'用户名',
+
+    'password'=>'密码',
+
+    'rememberme'=>'记住密码',
+
+    'login'=>'登录', 
+
+    'badpassword' => '用户名或密码错误.', 
+
+];

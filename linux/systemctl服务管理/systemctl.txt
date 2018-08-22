@@ -1,0 +1,43 @@
+.启动nfs服务
+systemctl start nfs-server.service
+2.设置开机自启动
+
+systemctl enable nfs-server.service
+3.停止开机自启动
+
+systemctl disable nfs-server.service
+4.查看服务当前状态
+
+systemctl status nfs-server.service
+5.重新启动某服务
+
+systemctl restart nfs-server.service
+6.查看所有已启动的服务
+
+systemctl list -units --type=service
+
+
+systemctl服务主体存贮目录：
+
+/usr/lib/systemd/system/
+
+systemctl服务开机启动链接存贮目录：
+/etc/systemd/system/basic.target.wants/
+
+
+
+列出所有开机自启的服务
+
+systemctl list-unit-files|grep enabled
+
+
+
+列出防火墙服务的自启状态
+
+systemctl list-unit-files|grep firewalld
+
+
+
+列出所有服务的层级和依赖关系，可以指定某个服务
+
+systemctl list-dependencies [服务名称]

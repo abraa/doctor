@@ -1,0 +1,5 @@
+config(['key'=>value]) //保存
+config('key',default) //获取
+
+cache(['key'=>value],expiration_time) //保存
+cache('key')  //获取

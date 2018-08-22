@@ -1,0 +1,9 @@
+composer dump-autoload 更新
+
+把composer的源切换为 国际的源：
+
+composer config -g repo.packagist composer https://packagist.org
+
+国际源切换为中国镜像：
+
+composer config -g repo.packagist composer https://packagist.phpcomposer.com

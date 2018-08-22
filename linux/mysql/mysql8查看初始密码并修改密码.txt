@@ -1,0 +1,40 @@
+修改初始密码
+查看临时密码grep "A temporary password" /var/log/mysqld.log
+
+根据临时密码重置新密码和密码策略：mysql_secure_installation;根据提示一步步操作，注意密码要包含大小写字母及数字和一些符号，不然会提示密码不安全。
+===========================================================
+设置远程连接
+注意阿里云服务器需要设置安全组放开3306端口； 
+改表法
+
+use mysql;
+update user set host='%' where user='root';    //修改root允许远程链接
+
+如果使用Navicat连接mysql 8.0.11 报 “2059 - authentication plugin ‘caching_sha2_password’ …”
+1130 (HY000): Host 'x.x.x.x' is not allowed to connect to this MySQL server //这也有可能是密码的问题 
+解决办法：
+
+ALTER USER 'root'@'%' IDENTIFIED WITH mysql_native_password BY '密码';    //修改密码使用mysql_native_password 规则  8.0默认使用caching_sha2_password
+
+===========================================================
+一、如果当前root用户authentication_string字段下有内容，先将其设置为空，否则直接进行二步骤。
+
+use mysql; 
+update user set authentication_string='' where user='root'
+
+
+　二、使用ALTER修改root用户密码,方法为 ALTER user 'root'@'localhost' IDENTIFIED BY '新密码'。如下：
+
+ALTER user 'root'@'localhost' IDENTIFIED BY 'Cliu123#'
+　　此处有两点需要注意：
+
+1、不需要flush privileges来刷新权限。
+
+2、密码要包含大写字母，小写字母，数字，特殊符号。
+
+　　修改成功； 重新使用用户名密码登录即可；
+
+use mysql; 
+update user set authentication_string="newpassword" where user="root";
+这样会给user表中root用户的authentication_string字段下设置了newpassword值；
+
