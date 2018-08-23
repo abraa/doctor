@@ -1,0 +1,42 @@
+1.先去https://github.com/fatedier/frp/releases下载已经打包号的安装包（当然你要自己打包源码当我没说）
+
+将 frps 及 frps.ini 放到具有公网 IP 的机器上。
+
+将 frpc 及 frpc.ini 放到处于内网环境的机器上。
+
+文档地址：https://github.com/fatedier/frp/blob/master/README_zh.md
+================================================
+frps
+修改 frps.ini 文件，这里使用了最简化的配置：
+# frps.ini
+[common]
+bind_port = 7000
+vhost_http_port = 8080     //服务器 http 访问端口为 8080
+启动 frps：
+./frps -c ./frps.ini
+
+=====================================================
+frpc
+# frpc.ini
+[common]
+server_addr = x.x.x.x
+server_port = 7000
+
+[ssh]
+type = tcp
+local_ip = 127.0.0.1
+local_port = 22
+remote_port = 6000				//ssh -oPort=6000 test@x.x.x.x
+
+[web]
+type = http
+local_port = 80				//通过浏览器访问 http://www.yourdomain.com:8080 即可访问本地 80 web服务
+custom_domains = www.yourdomain.com
+
+[http]		//转发所有http请求 不判断域名  server也不需要设置vhost_http_port 
+type = tcp
+local_ip = 127.0.0.1
+local_port = 80
+remote_port = 80
+启动 frpc：
+./frpc -c ./frpc.ini
