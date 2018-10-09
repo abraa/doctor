@@ -1,0 +1,127 @@
+处理失败的任务
+
+不可避免会出现运行失败的任务。你不必为此担心，Laravel 可以轻松设置任务允许的最大尝试次数，若是执行次数达到该限定，该任务会被插入到 failed_jobs 表，要创建一个 failed_jobs 表的迁移，可以使用 queue:failed-table 命令
+
+php artisan queue:failed-table
+php artisan migrate
+
+然后，运行队列进程时，通过 --tries 参数项来设置队列任务允许的最大尝试次数，如果没有指定 --tries 选项的值，任务会被无限期重试：
+
+php artisan queue:work redis --tries=3
+
+清理失败的任务
+
+你可以在任务类中定义 failed 方法, 从而允许你在失败发生时执行指定的动作，比如发送任务失败的通知，记录日志等。导致任务失败的 Exception 会被传递到 failed 方法:
+
+<?php
+
+namespace App\Jobs;
+
+use Exception;
+use App\Podcast;
+use App\AudioProcessor;
+use Illuminate\Bus\Queueable;
+use Illuminate\Queue\SerializesModels;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Contracts\Queue\ShouldQueue;
+
+class ProcessPodcast implements ShouldQueue
+{
+    use InteractsWithQueue, Queueable, SerializesModels;
+
+    protected $podcast;
+
+    /**
+     * Create a new job instance.
+     *
+     * @param  Podcast  $podcast
+     * @return void
+     */
+    public function __construct(Podcast $podcast)
+    {
+        $this->podcast = $podcast;
+    }
+
+    /**
+     * Execute the job.
+     *
+     * @param  AudioProcessor  $processor
+     * @return void
+     */
+    public function handle(AudioProcessor $processor)
+    {
+        // Process uploaded podcast...
+    }
+
+    /**
+     * The job failed to process.
+     *
+     * @param  Exception  $exception
+     * @return void
+     */
+    public function failed(Exception $exception)
+    {
+        // 发送失败通知, etc...
+    }
+}
+
+任务失败事件
+
+如果你期望在任务失败的时候触发某个事件，可以使用 Queue::failing 方法。该事件通过邮件或HipChat通知团队。举个例子，我么可以在 Laravel 自带的 AppServiceProvider 中添加一个回调到该事件：
+
+<?php
+
+namespace App\Providers;
+
+use Illuminate\Support\Facades\Queue;
+use Illuminate\Queue\Events\JobFailed;
+use Illuminate\Support\ServiceProvider;
+
+class AppServiceProvider extends ServiceProvider
+{
+    /**
+     * 启动应用服务.
+     *
+     * @return void
+     */
+    public function boot()
+    {
+        Queue::failing(function (JobFailed $event) {
+            // $event->connectionName
+            // $event->job
+            // $event->exception
+        });
+    }
+
+    /**
+     * 注册服务提供者.
+     *
+     * @return void
+     */
+    public function register()
+    {
+        //
+    }
+}
+
+重试失败的任务
+
+要查看已插入到 failed_jobs 数据表中的所有失败任务，可以使用 Artisan 命 queue:failed：
+
+php artisan queue:failed
+
+该命令将会列出任务 ID、连接、队列和失败时间，任务 ID 可用于重试失败任务，例如，要重试一个 ID 为 5 的失败任务，可以运行下面的命令：
+
+php artisan queue:retry 5
+
+要重试所有失败任务，运行如下命令即可:
+
+php artisan queue:retry all
+
+如果你要删除一个失败任务，可以使用 queue:forget 命令：
+
+php artisan queue:forget 5
+
+要删除所有失败任务，可以使用 queue:flush 命令：
+
+php artisan queue:flush

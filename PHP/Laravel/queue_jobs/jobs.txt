@@ -1,0 +1,125 @@
+生成任务类
+
+通常，所有的任务类都保存在 app/Jobs 目录。如果 app/Jobs 不存在，在运行 Artisan 命令 make:job 的时候，它将会自动创建。你可以通过 Artisan CLI 来生成队列任务类：
+
+php artisan make:job ProcessPodcast
+
+handle 方法在任务被处理的时候调用，注意我们可以在任务的 handle 方法中进行依赖注入。Laravel 服务容器会自动注入这些依赖。
+class  ProcessPodcast{
+
+public function __construct(Podcast $podcast)
+    {
+        $this->podcast = $podcast;
+    }
+
+public function handle(AudioProcessor $processor)
+    {
+        // 处理上传的播客…
+    }
+}
+---------------------------------------------------------------------------------------------
+分发任务
+   ProcessPodcast::dispatch($podcast);
+		->delay(now()->addMinutes(10)); //延时分发  10分钟后执行
+任务链
+
+任务链允许你指定一个需要在一个序列中执行的队列任务列表，如果序列中的某个任务失败，其它任务将不再运行。要执行一个队列任务链，可以使用任意可分发任务上的 withChain 方法：
+
+ProcessPodcast::withChain([
+    new OptimizePodcast,
+    new ReleasePodcast
+])->dispatch();
+
+链接连接 & 队列
+
+如果你想要指定任务链使用的默认连接和队列，可以使用 allOnConnection 和 allOnQueue 方法。这些方法指定需要用到的队列连接和队列名称，除非队列任务显式指定了分配的连接/队列：
+
+ProcessPodcast::withChain([
+    new OptimizePodcast,
+    new ReleasePodcast
+])->dispatch()->allOnConnection('redis')->allOnQueue('podcasts');
+
+
+ ProcessPodcast::dispatch($podcast)->onQueue('processing');    //指定队列
+		->onConnection('sqs')     //指定连接
+-----------------------------------------------------------------------------------------------------------
+配置    
+class ProcessPodcast implements ShouldQueue
+{
+  
+    public $tries = 5;    //最大失败次数  php artisan queue:work --tries=3命令行指定 ， 文件比命令行优先级高
+  public $timeout = 120;  //最大执行时间  php artisan queue:work --timeout=30
+
+//除了定义在任务失败前的最大尝试次数外，还可以定义在指定时间内允许任务的最大尝试次数，
+public function retryUntil()
+{
+    return now()->addSeconds(5);
+}
+
+}
+==============================================================
+运行队列进程
+php artisan queue:work
+注：为了保持队列进程 queue:work 持续在后台运行，需要使用进程守护程序，比如 Supervisor 来确保队列进程持续运行。
+===========================================================
+处理单个任务
+
+--once 选项可用于告知进程只处理队列中的单个任务：
+
+php artisan queue:work --once
+
+指定连接和队列
+
+队列进程同样可以自定义连接和队列。传递给 work 命令的连接名需要与配置文件 config/queue.php 中定义的某个连接配置相匹配：
+
+php artisan queue:work redis
+
+你可以自定义将某个队列进程指定某个连接来管理。举例来说，如果所有的邮件任务都是通过 redis 连接上的 emails 队列处理，那么可以用以下命令来启动单一进程只处理单一队列：
+
+php artisan queue:work redis --queue=emails
+
+
+后台队列进程不会再处理每个任务前重启框架，因此你需要在每次任务完成后释放所有重量级的资源。例如，如果你在使用 GD 库处理图片，需要在完成的时候使用 imagedestroy 来释放内存。
+队列优先级
+
+有时候你需要区分任务的优先级。比如，在配置文件 config/queue.php 中，你可以定义 redis 连接的默认 queue 为 low。不过，如果需要将任务分发到高优先级 high，可以这么做：
+
+dispatch((new Job)->onQueue('high'));
+
+如果期望所有 high 高优先级的队列都将先于 low 低优先级的任务执行，可以像这样启动队列进程：
+
+php artisan queue:work --queue=high,low
+
+队列进程 & 部署
+
+前文已经提到队列进程是长生命周期的进程，在重启以前，所有源码的修改并不会对其产生影响。所以，最简单的方法是在每次发布新版本后重新启动队列进程。你可以通过 Aritisan 命令 queue:restart 来优雅地重启队列进程:
+
+php artisan queue:restart
+
+该命令将在队列进程完成正在进行的任务后，结束该进程，避免队列任务的丢失或错误。由于队列进程会在执行 queue:restart 命令后死掉，你仍然需要通过进程守护程序如Supervisor 来自动重启队列进程。
+
+    注：队列使用缓存来存储重启信号，所以在使用此功能前你需要验证缓存驱动配置正确。
+
+任务过期 & 超时
+
+任务过期
+
+在配置文件 config/queue.php 中，每个连接都定义了 retry_after 项。该配置项的目的是定义任务在执行以后多少秒后释放回队列。如果retry_after 设定的值为 90, 任务在运行 90 秒后还未完成，那么将被释放回队列而不是删除掉。毫无疑问，你需要把 retry_after 的值设定为任务执行时间的最大可能值。
+
+    注：只有 Amazon SQS 配置信息不包含 retry_after 项。Amazon SQS 的任务执行时间基于 Default Visibility Timeout ，该项在 Amazon AWS 控制台配置。
+
+队列进程超时
+
+队列进程 queue:work 可以设定超时 --timeout 项。该 --timeout 控制队列进程执行每个任务的最长时间，如果超时，该进程将被关闭。各种错误都可能导致某个任务处于“冻结”状态，比如 HTTP 无响应等。队列进程超时就是为了将这些“冻结”的进程关闭：
+
+php artisan queue:work --timeout=60
+
+配置项 retry_after 和 Aritisan 参数项 --timeout 不同，但目的都是为了确保任务的安全，并且只被成功的执行一次。
+
+    注：参数项 --timeout 的值应该始终小于配置项 retry_after 的值，这是为了确保队列进程总在任务重试以前关闭。如果 --timeout 比retry_after 大，那么你的任务可能被执行两次。
+
+进程休眠时间
+
+当任务在队列中有效时，进程会持续处理任务，没有延迟。不过，我们可以使用 sleep 配置项来指定没有新的有效任务产生时的休眠时间：
+
+php artisan queue:work --sleep=3

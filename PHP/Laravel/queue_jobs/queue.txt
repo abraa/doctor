@@ -1,0 +1,53 @@
+1.配置文件在config/queue.php中
+驱动预备知识：
+数据库：
+'database' => [
+            'driver' => 'database',
+            'table' => 'jobs',
+            'queue' => 'default',
+            'retry_after' => 90,
+        ],
+要使用 database 队列驱动，你需要数据表保存任务信息。
+php artisan queue:table	//配置中的table字段
+php artisan migrate
+Redis：
+'redis' => [
+    'driver' => 'redis',
+    'connection' => 'default',
+    'queue' => 'default',
+    'retry_after' => 90,
+    'block_for' => 5,				//设置轮询阻塞时间（s）
+],
+注：阻塞是一个实验性功能，如果 Redis 服务器或队列进程与检索队列任务同时崩溃，那么队列任务有可能会丢失。
+如果使用以下几种队列驱动，需要安装相应的依赖：
+
+    Amazon SQS: aws/aws-sdk-php ~3.0
+    Beanstalkd: pda/pheanstalk ~3.0
+    Redis: predis/predis ~1.0
+
+=====================================================
+简单操作
+php artisan queue:table<span>			//队列任务表
+php artisan queue:failed-table<span>			//任务执行失败表
+php artisan migrate
+
+2.创建job类
+
+php artisan make:job ProcessPodcast
+
+3.在job类中，实现逻辑
+job主要包括三个函数
+
+
+构造函数 可选，用来传参
+handle（） 必选，实现队列任务逻辑
+failed() 可选，当任务失败时执行
+
+
+4.分发队列任务
+
+ProcessPodcast::dispatch($podcast);
+
+5.开启队列进程，执行队列任务
+
+php artisan queue:work

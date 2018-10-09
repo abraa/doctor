@@ -1,0 +1,51 @@
+通过 Queue 门面提供的 before 和 after 方法可以在任务被处理之前或之后指定要执行的回调。这些回调可用来记录日志或者记录统计数据。通常，你可以在服务提供者中使用这些方法。比如，我们可能在AppServiceProvider 这样用:
+
+<?php
+
+namespace App\Providers;
+
+use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\ServiceProvider;
+use Illuminate\Queue\Events\JobProcessed;
+use Illuminate\Queue\Events\JobProcessing;
+
+class AppServiceProvider extends ServiceProvider
+{
+    /**
+     * Bootstrap any application services.
+     *
+     * @return void
+     */
+    public function boot()
+    {
+        Queue::before(function (JobProcessing $event) {
+            // $event->connectionName
+            // $event->job
+            // $event->job->payload()
+        });
+
+        Queue::after(function (JobProcessed $event) {
+            // $event->connectionName
+            // $event->job
+            // $event->job->payload()
+        });
+    }
+
+    /**
+     * Register the service provider.
+     *
+     * @return void
+     */
+    public function register()
+    {
+        //
+    }
+}
+
+使用 Queue 门面上的 looping 方法，你可以在进程尝试从队列中获取任务之前指定要执行的回调。例如，你可以注册一个闭包来回滚之前失败任务遗留下来的事务：
+
+Queue::looping(function () {
+    while (DB::transactionLevel() > 0) {
+        DB::rollBack();
+    }
+});
