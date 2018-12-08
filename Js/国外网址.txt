@@ -1,0 +1,15 @@
+<div class="link" style="text-align:right;">
+                <a target="_blank" href="https://twitter.com/ZRWSColorSorter" data-description="Custom share buttons for Pinterest, Twitter, Facebook and Google Plus." data-via="sonnyt" class="prettySocial fa fa-twitter kaway1"></a>
+
+                <a target="_blank" href="https://www.facebook.com/ricebeansgrainsteaseedssesamenutscolorsorting/?ref=bookmarks" data-title="prettySocial - custom social share buttons." data-description="Custom share buttons for Pinterest, Twitter, Facebook and Google Plus." data-media="http://sonnyt.com/assets/imgs/prettySocial.png" class="prettySocial fa fa-facebook kaway2"></a>
+
+                <a target="_blank" href="https://plus.google.com/u/0/115527605862298496546" data-description="Custom share buttons for Pinterest, Twitter, Facebook and Google Plus." class="prettySocial fa fa-google-plus kaway3"></a>
+
+                <a target="_blank" href="https://www.pinterest.com/wesortcolorsorter/" data-description="Custom share buttons for Pinterest, Twitter, Facebook and Google Plus." data-media="http://sonnyt.com/assets/imgs/prettySocial.png" class="prettySocial fa fa-pinterest kaway4"></a>
+
+                <a target="_blank" href="https://www.linkedin.com/m/logout/" data-title="prettySocial - custom social share buttons." data-description="Custom share buttons for Pinterest, Twitter, Facebook and Google Plus." data-via="sonnyt" data-media="http://sonnyt.com/assets/imgs/prettySocial.png" class="prettySocial fa fa-linkedin kaway5"></a>
+
+                <a target="_blank" href="https://www.youtube.com/channel/UCKoEWSQoECzqnQMF25asz3A" class=" kaway6"><img src="/templates/default/images/s4.png" alt=""></a>
+
+                <a target="_blank" href="skype:cherry73773?call" onclick="return skypeCheck();"><img style="width:32px; height:32px;" src="/templates/default/images/small_white_online.png" alt="Call me!"></a>
+            </div>

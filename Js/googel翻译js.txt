@@ -1,0 +1,49 @@
+    <div id="google_translate_element2"></div>
+    <script>
+       var frame = null;
+	  var frame_select = null;
+    var JsSrc =(navigator.language || navigator.browserLanguage).toLowerCase();
+    if(JsSrc.indexOf('zh')>=0)
+    {
+       document.getElementById('src_translate').src='https://translate.google.cn/translate_a/element.js?hl=en&cb=googleTranslateElementInit';
+    }else{
+       document.getElementById('src_translate').src='https://translate.google.com/translate_a/element.js?hl=en&cb=googleTranslateElementInit';
+    }
+      var transId =  /Android|webOS|iPhone|iPod|BlackBerry/i.test(navigator.userAgent) ? "google_translate_element" :  "google_translate_element2";
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+              layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+              pageLanguage:navigator.language,
+              includedLanguages:'ar,bn,de,en,es,fr,hi,id,it,ms,nl,pl,pt,ru,th,tl,vi',			//插件的文字顺序和这无关。英文是全称排序，中文是中文排序 看下面ul列表
+             					 
+               // layout: google.translate.TranslateElement.InlineLayout.HORIZONTAL
+            }, transId);
+         frame =document.getElementsByClassName('goog-te-menu-frame')[0];
+		 frame_select = frame.contentWindow.document.getElementsByClassName('goog-te-menu2-item');
+          $('.header-lang').show();
+        }
+     
+	function frame_click(ele){
+		frame_select[ele].click();
+	}
+    </script>
+      <div class="header-lang">
+        <h3>Language</h3>
+        <ul style="display:none;">
+            <li><a href="javascript:frame_click(0);"><img width="84" height="14" src="{%$rootpath%}images/en.gif" /></a></li><!--English -->
+            <li><a href="javascript:frame_click(1);"><img width="84" height="14" src="{%$rootpath%}images/ar.gif" /></a></li><!--Arabic -->
+            <li><a href="javascript:frame_click(2);"><img width="84" height="14" src="{%$rootpath%}images/bn.gif" /></a></li><!--Bengali -->
+            <li><a href="javascript:frame_click(3);"><img width="84" height="14" src="{%$rootpath%}images/nl.gif" /></a></li><!--Dutch -->
+            <li><a href="javascript:frame_click(4);"><img width="84" height="14" src="{%$rootpath%}images/tl.gif" /></a></li><!--Filipino -->
+            <li><a href="javascript:frame_click(5);"><img width="84" height="14" src="{%$rootpath%}images/fr.gif" /></a></li><!--French -->
+            <li><a href="javascript:frame_click(6);"><img width="84" height="14" src="{%$rootpath%}images/de.gif" /></a></li><!--German -->
+            <li><a href="javascript:frame_click(7);"><img width="84" height="14" src="{%$rootpath%}images/hi.gif" /></a></li><!--Hindi -->
+            <li><a href="javascript:frame_click(8);"><img width="84" height="14" src="{%$rootpath%}images/id.gif" /></a></li><!--Indonesian -->
+            <li><a href="javascript:frame_click(9);"><img width="84" height="14" src="{%$rootpath%}images/it.gif" /></a></li><!--Italian -->
+            <li><a href="javascript:frame_click(10);"><img width="84" height="14" src="{%$rootpath%}images/ms.gif" /></a></li><!--Malay -->
+            <li><a href="javascript:frame_click(11);"><img width="84" height="14" src="{%$rootpath%}images/pl.gif" /></a></li><!--Polish -->
+            <li><a href="javascript:frame_click(12);"><img width="84" height="14" src="{%$rootpath%}images/pt.gif" /></a></li><!--Portuguese -->
+            <li><a href="javascript:frame_click(13);"><img width="84" height="14" src="{%$rootpath%}images/ru.gif" /></a></li><!--Russian -->
+            <li><a href="javascript:frame_click(14);"><img width="84" height="14" src="{%$rootpath%}images/es.gif" /></a></li><!--Spanish -->
+            <li><a href="javascript:frame_click(15);"><img width="84" height="14" src="{%$rootpath%}images/th.gif" /></a></li><!--Thai -->
+            <li><a href="javascript:frame_click(16);"><img width="84" height="14" src="{%$rootpath%}images/vi.gif" /></a></li><!--Vietnamese -->
