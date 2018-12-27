@@ -1,0 +1,65 @@
+打开/home/zkpk/elasticsearch-node1/config目录下的elasticsearch.yml 文件 ,修改以下属性值并取消该行的注释：
+==========================================
+cluster.name:  elasticsearch
+#这是集群名字，我们 起名为 elasticsearch
+#es启动后会将具有相同集群名字的节点放到一个集群下。
+
+node.name: "es-node1"
+#节点名字。
+
+discovery.zen.minimum_master_nodes: 2
+#指定集群中的节点中有几个有master资格的节点。
+#对于大集群可以写3个以上。
+
+discovery.zen.ping.timeout: 40s
+
+#默认是3s，这是设置集群中自动发现其它节点时ping连接超时时间，
+#为避免因为网络差而导致启动报错，我设成了40s。
+
+discovery.zen.ping.multicast.enabled: false
+#设置是否打开多播发现节点，默认是true。
+
+network.bind_host: 192.168.137.100
+#设置绑定的ip地址，这是我的master虚拟机的IP。
+
+network.publish_host: 192.168.137.100
+#设置其它节点和该节点交互的ip地址。
+
+network.host: 192.168.137.100
+#同时设置bind_host和publish_host上面两个参数。
+#network.host:  0.0.0.0   
+#所有IP访问
+
+discovery.zen.ping.unicast.hosts: ["192.168.137.100",  "192.168.137.101","192.168.137.100：9301"]
+#discovery.zen.ping.unicast.hosts:["节点1的 ip","节点2 的ip","节点3的ip"]
+#指明集群中其它可能为master的节点ip,
+#以防es启动后发现不了集群中的其他节点。
+#第一对引号里是node1，默认端口是9300,
+#第二个是 node2 ，在另外一台机器上,
+#第三个引号里是node3，因为它和node1在一台机器上，所以指定了9301端口。
+
+====================================================
+（2） 进一步修改
+拷贝 elasticsearch-node1 整个文件夹，两份，一份elasticsearch-node2，一份elasticsearch-node3.
+将elasticsearch-node2 文件夹copy到另外一台IP为192.168.137.101的机器上。而在 192.168.137.100 机器上有 node1和node3.
+
+对于node3： node3和node1在一台机器上，node1的配置文件里端口默认分别是9300和9200，所以要改一下node3配置文件里的端口，elasticsearch.yml 文件修改如下：
+
+node.name: "es-node3"
+transport.tcp.port: 9301
+http.port: 9201
+
+对于node2： 对 elasticsearch.yml 修改如下
+
+node.name: "es-node2"
+network.bind_host: 192.168.137.101
+network.publish_host: 192.168.137.101
+network.host: 192.168.137.101
+
+
+注意：
+1.对于单机多节点的es集群，一定要注意修改 transport.tcp.port 和http.port 的默认值保证节点间不冲突。
+2. 出现找不到同一集群中的其他节点的情况，检查下 
+
+
+原文：https://blog.csdn.net/sinat_28224453/article/details/51134978 

@@ -1,0 +1,20 @@
+<script id='src_translate' ></script>
+<div id="google_translate_element2"></div>
+    <script>
+    var JsSrc =(navigator.language || navigator.browserLanguage).toLowerCase();
+    if(JsSrc.indexOf('zh')>=0)
+    {
+       document.getElementById('src_translate').src='https://translate.google.cn/translate_a/element.js?cb=googleTranslateElementInit';
+    }else{
+     document.getElementById('src_translate').src='https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+    }
+      var transId =  /Android|webOS|iPhone|iPod|BlackBerry/i.test(navigator.userAgent) ? "google_translate_element" :  "google_translate_element2";
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+              layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+              pageLanguage:navigator.language,
+              includedLanguages:'ar,nl,fr,de,hi,en,it,pl,pt,ru,es,tl,vi,th,bn',
+               // layout: google.translate.TranslateElement.InlineLayout.HORIZONTAL
+            }, transId);
+        }
+    </script>

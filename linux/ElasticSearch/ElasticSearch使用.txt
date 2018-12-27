@@ -1,0 +1,116 @@
+1. document.
+	使用elasticSearch 你需要先索引一个document.(你可以认为是创建一个对象用来存储)
+	（这同时也创建了一个index和type）(1个index最好对应一个type,你可以删掉重建)
+        $params = [
+            'index' => 'my_index', //索引名称
+            'body' => [
+                'settings' => [
+                    'number_of_shards' => 3,
+                    'number_of_replicas' => 2
+                ],
+                'mappings' => [
+                    'my_type' => [
+                        '_source' => [
+                            'enabled' => true   //false不存源数据，即你只能查到一个_id
+                        ],
+                        'properties' => [
+                            'title'=> [ //字段1
+                                'type'=>'text',//类型 string、integer、float、double、boolean、date
+                                'index'=> 'analyzed',//索引是否精确值  analyzed not_analyzed
+                                "analyzer"=> "ik_max_word",
+                                "search_analyzer"=> "ik_max_word"
+                            ],
+                            'content'=> [
+                                'type'=>'text',//类型 string、integer、float、double、boolean、date
+                                'index'=> 'analyzed',//索引是否精确值  analyzed not_analyzed
+                                "analyzer"=> "ik_max_word",
+                                "search_analyzer"=> "ik_max_word"
+                            ],
+                        ]
+                    ]
+                ],
+            ]
+        ];
+
+               $response = $client->indices()->create($params);
+
+=======================================================
+
+2. 添加一条数据
+$params = [
+    'index' => 'my_index',
+    'type' => 'my_type',
+    'id' => 'my_id',
+    'body' => ['testField' => 'abc']
+];
+
+$response = $client->index($params);
+-------------------------------------------------------------------------------------------
+  批量添加
+for($i = 0; $i < 100; $i++) {
+    $params['body'][] = [
+        'index' => [
+            '_index' => 'my_index',
+            '_type' => 'my_type',
+        ]
+    ];
+
+    $params['body'][] = [
+        'my_field' => 'my_value',
+        'second_field' => 'some more values'
+    ];
+}
+
+$responses = $client->bulk($params);
+
+
+=======================================================
+
+3 查询   https://www.elastic.co/guide/cn/elasticsearch/guide/current/query-dsl-intro.html
+
+j简单查询
+$params = [
+    'index' => 'my_index',
+    'type' => 'my_type',
+    'body' => [
+        'query' => [
+            'match' => [
+                content=> 中国
+            ]
+        ]，
+       "sort"=>[		//排序
+                    't_id'=>[
+                        "order"=>'asc'
+                    ],
+                    'c_id'=>[
+                        'order'=>'desc'
+                    ]
+       ]
+    ]
+];
+
+$results = $client->search($params);
+使用bool进行复杂查询
+{
+  "query": {
+    "bool" : {
+      "must" : {
+        "term" : { "user" : "kimchy" }
+      },
+      "filter": {
+        "term" : { "tag" : "tech" }
+      },
+      "must_not" : {
+        "range" : {
+          "age" : { "gte" : 10, "lte" : 20 }
+        }
+      },
+      "should" : [
+        { "term" : { "tag" : "wow" } },
+        { "term" : { "tag" : "elasticsearch" } }
+      ],
+      "minimum_should_match" : 1,
+      "boost" : 1.0
+    }
+  }
+}

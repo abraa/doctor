@@ -1,0 +1,27 @@
+1. 先装java
+====================================
+2.下载elasticsearch压缩包
+https://www.elastic.co/downloads/elasticsearch
+
+3. 解压缩 tar -zxvf elasticsearch.tar.gz
+
+
+4. 运行 ./elasticsearch/bin/elasticsearch (windows 运行elasticsearch.bat) (加上 -d 作为服务在后台运行)
+
+5. 然后就可以另开一个终端 curl 'http://localhost:9200/?pretty'测试了。
+
+==========================================================
+安装中文分词。默认elasticsearch使用的是英文分词，如‘’中国‘’会分为‘’中‘’，‘’国‘’
+
+1.解压安装
+下载压缩包
+https://github.com/medcl/elasticsearch-analysis-ik/releases/download/v6.5.2/elasticsearch-analysis-ik-6.5.2.zip
+cd your-es-root/plugins/ && mkdir ik
+unzip plugin to folder your-es-root/plugins/ik
+
+1.在线安装 your-es-root/bin/elasticsearch-plugin install https://github.com/medcl/elasticsearch-analysis-ik/releases/download/v6.3.0/elasticsearch-analysis-ik-6.3.0.zip 
+
+
+curl -XPOST http://localhost:9200/index/fulltext/3 -H 'Content-Type:application/json' -d'
+{"content":"中韩渔警冲突调查：韩警平均每天扣1艘中国渔船","title":"中国牛逼"}
+'
