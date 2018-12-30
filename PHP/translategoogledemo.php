@@ -4,7 +4,35 @@
 define('UA', isset($_SERVER['HTTP_USER_AGENT']) && !empty($_SERVER['HTTP_USER_AGENT']) ?  $_SERVER['HTTP_USER_AGENT'] : 'Mozilla/5.0 (Android; Mobile; rv:22.0) Gecko/22.0 Firefox/22.0');
 
 //session_start();
+function t_arrayToXml($arr)
+{
+    $xml = "<xml>";
+    $xml .= t_arrayToXml2($arr);
+    $xml.="</xml>";
 
+    return $xml;
+}
+
+function t_arrayToXml2($arr){
+    $xml = "";
+    foreach ($arr as $key=>$val)
+    {
+        if (is_array($val)){
+            $xml.="<".$key.">".t_arrayToXml2($val)."</".$key.">";
+        }else{
+            $xml.="<".$key."><t_childxml>".$val."</t_childxml></".$key.">";
+        }
+    }
+    return $xml;
+}
+
+//xml转数组
+
+function t_xmlToArray($xml){
+    $xml = str_replace(array('<t_childxml>','</t_childxml>'),array('<![CDATA[', ']]>'),$xml);
+    $array = json_decode(json_encode(simplexml_load_string($xml, 'SimpleXMLElement', LIBXML_NOCDATA)),true);
+    return $array;
+}
 //这个函数是无符号右移
 //参考http://www.shangxueba.com/jingyan/1911053.html
 function shr32($x, $bits)
@@ -147,6 +175,8 @@ function sendHttpRequest($url, $method,$data, $params){
     $conts = curl_exec($ch);
     return $conts;
 }
+
+//文本翻译示例
 //$q = file_get_contents('./c.html');
 //$str = translate('en', 'ja',$q);
 //$str = preg_replace("/\\\\u([0-9a-f]{3,4})/i", "&#x\\1;", $str);
@@ -157,7 +187,7 @@ function sendHttpRequest($url, $method,$data, $params){
 //file_put_contents('./d.html',$str);
 //echo($res);
 
-
+//当前网站翻译
 if(!isset($_POST['translate_google'])){
     $url ='http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
     $postData = empty($_POST)?array():$_POST;
@@ -196,4 +226,14 @@ if(!isset($_POST['translate_google'])){
 }
 
 echo file_get_contents('./c.html');
+
+
+//数组转xml翻译
+// $str = translate('en', $prefix,$str1);
+
+// $str1 = t_arrayToXml($data);
+// $str = preg_replace("/\\\\u([0-9a-f]{3,4})/i", "&#x\\1;", $str);
+// $str= html_entity_decode($str, null, 'UTF-8');
+// eval('$str='.$str.';');
+// var_dump(t_xmlToArray($str));
 ?>
