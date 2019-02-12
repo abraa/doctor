@@ -1,0 +1,43 @@
+一.基本规范
+1.命名空间以及类必须符合 PSR 的自动加载规范 PSR-4 
+2.类的命名必须 遵循 StudlyCaps 大写开头的驼峰命名规范。
+3.类的常量中所有字母都必须大写，词间以下划线分隔。
+4.类的属性和方法命名小写写开头的驼峰式
+5.函数的命名以小写开头，下划线_连接
+6.局部变量命名以小写开头使用下划线_连接
+
+二.代码风格
+1. 类的开头<?php 后面写类的功能说明注释
+2. namespace 命名空间声明语句和 use 声明语句块后面，必须插入一个空白行
+3. 类和方法的开始花括号({)必须写在函数声明后自成一行，结束花括号(})也必须写在函数主体后自成一行。
+4. 每行建议不超过80个字符
+5. 缩进建议使用空格而不是table
+6. 关键字 以及 True/False/Null 使用小写 true/false/null
+7, 参数列表和调用中，每个参数后面必须要有一个空格，而前面一定不能有空格 
+public function foo($arg1, &$arg2, $arg3 = [])
+8.参数列表和调用可以分列成多行，这样，包括第一个参数在内的每个参数都必须单独成行。
+foo(
+        $arg1,
+        $arg2,
+        $arg3
+    )
+9.控制结构 { 和控制语句在同一行，且前面有空格。 } 结束单独一行
+if ($expr1) {
+    // if body
+} 
+elseif ($expr2) {
+    // elseif body
+}
+ else {
+    // else body;
+}
+
+
+三.laravel代码规范
+1. 相关功能写在laravel相关目录中，如没有目录请新建目录（如Model写在Model目录，Support 写在Support目录 ）
+2.  路由相关控制器之前执行代码写在中间件middleware中。和类相关的写在类构造函数中（记住laravel构造函数是在中间件之前执行的）
+3. 异常统一定义输出在Exceptions下相关Exception->render而不写在Handle->render中，异常状态吗定义常量在Handle中
+4. API返回使用json,带上通讯状态码code和业务状态码status_code { code:1, status_code:200...} 
+5. 代码书写使用模块分层，抽离控制器Controller和逻辑层Logic(Controller写交互，Logic写业务，Model做数据存储)
+6. 交互事件如错误日志，短信，微信推送，账单纪录等终端使用Event/Listeners,而不要直接写在逻辑后面
+7.数据库查询建议使用UserModel::query() 而不是DB::table('user')

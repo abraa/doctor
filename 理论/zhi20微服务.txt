@@ -1,0 +1,19 @@
+k8s（Kubernetes）+docker+swoole+php+Eureka
+
+服务注册和服务发现:consul 
+服务健康检查:consul 
+配置管理:consul、archaius 
+集群容错:hystrix 
+计数监控:codahale-metrics、java-statsd-client、hystrix-dashboard、turbine、statsd、graphite、grafana 
+服务路由:ribbon 
+服务通信:retrofit、AsyncHttpClient(不选择okhttp,是因为okhttp性能比较差) 
+文档输出:swagger 
+日志统计:logback+ELK 
+简化代码:lombok 
+消息队列:rabbitmq 
+分布式锁:redis实现和consul实现 
+本地缓存:guava cache 
+链路跟踪:zipkin、brave 
+基本技术:springboot 
+安全鉴权:auth2、openId connect 
+自动化构建与部署:gitlab + jenkins + docker + k8s
