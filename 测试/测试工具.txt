@@ -1,6 +1,9 @@
-bug查找 
+﻿bug查找 
 	Acunetix Web Vulnerability	http://www.91ri.org/4020.html
 	AppScan				http://bbs.51cto.com/thread-966311-1.html
 
 windows 网络抓包
 	Progress Telerik Fiddler Web Debugger   https://www.telerik.com/fiddler
+
+压力测试
+jmeter
