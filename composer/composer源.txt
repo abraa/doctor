@@ -7,3 +7,6 @@ composer config -g repo.packagist composer https://packagist.org
 国际源切换为中国镜像：
 
 composer config -g repo.packagist composer https://packagist.phpcomposer.com
+
+阿里云
+composer config -g repo.packagist composer https://mirrors.aliyun.com/composer/
