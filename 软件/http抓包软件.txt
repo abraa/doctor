@@ -1,2 +1,7 @@
 fiddler
 https://www.telerik.com/fiddler
+
+
+
+charles 花瓶代理
+ 在设置中连接局域网IP,设置代理为PC
