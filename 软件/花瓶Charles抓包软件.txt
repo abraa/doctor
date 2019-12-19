@@ -1,0 +1,5 @@
+1. Proxy - Proxy-setting - http Proxy 设置 Port 为 8888   // 在手机端需要设置代理为这个端口
+2. 点击Start Recording
+
+ 3. 如果是https 
+ Proxy - SSL-Proxying setting   //具体设置还不懂
