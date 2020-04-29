@@ -1,0 +1,39 @@
+6.1密钥解析工具（OpenSSL工具安装）
+OpenSSL是用于安全通信的著名开源密码学工具包，包括主要的密码算法、常见密码和证书封装功能。
+
+OpenSSL官网下载地址： https://www.openssl.org/source/
+OpenSSL官网没有提供windows版本的安装包，可以选择其他开源平台提供的工具，例如：http://slproweb.com/products/Win32OpenSSL.html
+以该工具为例，选择32位或64位合适的版本下载，例如：Win64OpenSSL_Light-1_0_2h.exe
+设置环境变量，例如工具安装在C:\OpenSSL-Win64，则将“C:\OpenSSL-Win64\bin;”复制到Path中
+验证安装，打开命令行程序cmd，输入：openssl version，如输出版本号表示openssl工具安装成功
+6.2 将下载导出的证书文件（.pfx格式），进行密钥解析，具体解析方式参考下文「密钥解析」。
+密钥解析需用到OpenSSL工具，安装方法参考上文「OpenSSl工具安装」。
+
+PKCS1，适用C#、PHP、Python：
+进入证书文件所在目录；
+
+将下载的p12或pfx证书文件转化成temp.key文件：
+openssl pkcs12 -in 10000466938.p12 -nocerts -nodes -out temp.key
+
+导出私钥：
+openssl rsa -in temp.key -out yeepay_pay_pri.pem
+
+导出公钥：
+openssl rsa -in temp.key -pubout -out yeepay_pay_pub.pem
+
+
+PKCS8，适用Java、PHP：
+进入证书文件所在目录；
+
+将下载的p12或pfx证书文件转化成temp.key文件：
+openssl pkcs12 -in 10000466938.p12 -nocerts -nodes -out temp.key
+
+导出私钥：
+openssl rsa -in temp.key -out yeepay_pay_pri.pem
+
+转化成PKCS8格式，并且显示信息：
+openssl pkcs8 -topk8 -inform PEM -in yeepay_pay_pri.pem -outform PEM -nocrypt
+
+
+PKCS8转换PKCS1（此步骤按需选择，非必须）：
+openssl rsa -in pkcs8.pem -out pri_key.pem
