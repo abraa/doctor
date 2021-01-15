@@ -1,0 +1,8 @@
+1. JRebel  and XRebel  //热部署
+//激活需要先开启ReverseProxy_windows_amd64.exe ，然后在激活页面输入http://127.0.0.1:8888/ff47a3ac-c11e-4cb2-836b-9b2b26101696  //可以搜激活教程
+//会每日检查激活需要修改为离线Setting->JRebel  and XRebel 
+2.Lombok		//注解懒加载
+3.RestfulTool  	//一套 RESTful 服务开发辅助工具集。
+//右侧会出现RestfulTool 工具栏 在里面会显示所有restful请求链接，直接点击就可以访问 
+4. mybatisCodeHelperPro	//MyBatisHelp
+//mybatis关联mysql 在右侧database添加一个数据库连接 选择需要使用的数据库。 具体使用百度

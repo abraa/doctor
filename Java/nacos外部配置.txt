@@ -1,0 +1,90 @@
+
+================nacos安装=============
+1. 解压缩
+2. 启动startup.cmd
+3. 访问http://localhost:8848/nacos  默认帐号密码 nacos/nacos
+
+注意：无法启动检查java环境变量 和 使用管理员访问 以及 目录是否有特殊字符
+
+
+
+================nacos配置=============
+server:
+  tomcat:
+    uri-encoding: UTF-8
+    max-threads: 1000
+    min-spare-threads: 30
+
+spring:
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+
+
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+      enabled: true
+  mail:
+    username: "shoubaguanfang@shoubakeji.com"
+    password: shoubakeji2018S
+    properties:
+      mail:
+        smtp:
+          socketFactory:
+            class: javax.net.ssl.SSLSocketFactory
+            port: 465
+          auth: true
+          starttls:
+            enable: true
+            required: true
+    #host: smtp.shoubakeji.com
+    host: smtp.mxhichina.com
+    port: 465
+
+renren:
+  cluster: false  #集群配置  true集群环境   false单机环境，还需打开pom.xml里的spring-session-data-redis注释
+  globalSessionTimeout: 3600   #单机环境，session过期时间为60分钟
+  redis:
+    open: false  #是否开启redis缓存  true开启   false关闭
+
+
+#mybatis
+mybatis-plus:
+  mapper-locations: classpath*:/mapper/**/*.xml
+  #实体扫描，多个package用逗号或者分号分隔
+  typeAliasesPackage: com.shouba.entity
+  global-config:
+    #数据库相关配置
+    db-config:
+      #主键类型  AUTO:"数据库ID自增", INPUT:"用户输入ID", ID_WORKER:"全局唯一ID (数字类型唯一ID)", UUID:"全局唯一ID UUID";
+      id-type: AUTO
+      #字段策略 IGNORED:"忽略判断",NOT_NULL:"非 NULL 判断"),NOT_EMPTY:"非空判断"
+      field-strategy: NOT_NULL
+      #驼峰下划线转换
+      column-underline: true
+      logic-delete-value: -1
+      logic-not-delete-value: 0
+    banner: false
+  #原生配置
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: false
+    call-setters-on-nulls: true
+    jdbc-type-for-null: 'null'
+
+ZHI_HOST: http://testv3.zhi20.com:8000
+
+
+
+
+
+
+================spring boot 集成 nacos配置=============
+
+
+-Dspring.profiles.active=dev  //Edit Config.. 在VM设置
+
+如果在bootstrap.yml中添加了一行: spring.profiles.active=dev
+那么在nacos配置中心的配置文件需要更改名字为：bootstrap-dev.yaml
